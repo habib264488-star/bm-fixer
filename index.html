@@ -185,11 +185,9 @@ header:after{border-color:#ffffff28;box-shadow:0 0 0 28px #ffffff12,0 0 0 58px #
 .cloud-settings #cloudPanel{margin:0;max-width:none;border:0;border-top:1px solid #d8e2ef;border-radius:0;background:transparent}
 </style>
 
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
 </head>
 <body>
 <style>
@@ -667,13 +665,7 @@ th{position:sticky;top:0}
  <div class="metric"><div class="label">পার্টস/মালামাল কেনা</div><div class="value red">${fmt(r.purchaseTotal)}</div></div>
  <div class="metric" style="grid-column:1/-1"><div class="label">অন্যান্য খরচ</div><div class="value red">${fmt(r.otherTotal)}</div></div>
  </div><div class="cash"><div class="label">খরচ বাদে নগদ হিসাব</div><div class="value">${fmt(r.cashAfterExpenses)}</div></div>
- <div class="foot">BM FIXER • দৈনিক হিসাব রিপোর্ট</div></main>
-<script>
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.warn('PWA offline cache:', err)));
-}
-</script>
-</body></html>`;
+ <div class="foot">BM FIXER • দৈনিক হিসাব রিপোর্ট</div></main></body></html>`;
  let blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
  let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='BM-Fixer-Daily-Report-'+date+'.html';a.click();
  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
@@ -834,5 +826,10 @@ setDefaults();renderAccessControls();render();renderDashboardGates();
   finally{btn.disabled=false}
  });
 })();
+</script>
+<script>
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+ window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.warn('BM Fixer offline cache:', err)));
+}
 </script>
 </body></html>
