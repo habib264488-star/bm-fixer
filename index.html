@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ef563d">
+<meta name="description" content="BM Fixer service and parts purchase management">
+<title>BM Fixer — সার্ভিস হিসাব v3.7 Online Sync v1.2</title>
+<style>
+:root{--bg:#f3f6f4;--card:#fff;--ink:#17231e;--muted:#718078;--green:#146c4a;--line:#e4ebe6;--red:#b83b3b;--amber:#a86b12}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans Bengali",sans-serif}
+header{background:#10251f;color:white;padding:20px max(16px,calc((100% - 1100px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-size:21px;font-weight:800;letter-spacing:.3px}.sub{font-size:12px;color:#c1d5ca}
+main{max-width:1100px;margin:auto;padding:18px 14px 40px}.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:16px}
+button,.tab{border:0;border-radius:10px;padding:11px 14px;font:inherit;font-weight:650;cursor:pointer}
+.tab{background:#e6eee9;color:#345146;white-space:nowrap}.tab.active,button.primary{background:var(--green);color:white}
+button.secondary{background:#e8efeb;color:#244a3a}button.danger{background:#fff0f0;color:var(--red)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:15px;box-shadow:0 2px 8px #12251a08}
+.klabel{font-size:12px;color:var(--muted)}.kvalue{font-size:23px;font-weight:800;margin-top:5px}.green{color:var(--green)}.red{color:var(--red)}
+h2{font-size:18px;margin:0 0 13px}.section{display:none}.section.active{display:block}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid #d9e3dc;border-radius:10px;background:#fff;font:inherit;color:var(--ink)}
+label{font-size:12px;color:#52645a;display:block;margin:0 0 5px}.field{min-width:0;flex:1}.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.formgrid .wide{grid-column:span 2}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:650px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);vertical-align:top}th{color:#64736b;font-weight:700;background:#f8faf8}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:white}
+.empty{text-align:center;color:var(--muted);padding:28px}.hint{font-size:12px;color:var(--muted);line-height:1.6}
+.daily-preview{border:1px solid #dce8e0;border-radius:16px;padding:18px;background:linear-gradient(135deg,#ffffff,#f5faf6)}
+.daily-preview-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:2px solid #146c4a;padding-bottom:12px;margin-bottom:14px}
+.daily-preview-title{font-size:22px;font-weight:850;color:#124b35}.daily-preview-meta{font-size:14px;color:#52645a;line-height:1.8}
+.daily-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.daily-metric{background:#fff;border:1px solid #e3ebe5;border-radius:12px;padding:13px}
+.daily-metric .klabel{font-size:14px}.daily-metric .kvalue{font-size:25px}
+.daily-cash{margin-top:12px;background:#eaf5ee;border:1px solid #cfe4d6;border-radius:12px;padding:15px}
+.daily-cash .klabel{font-size:14px;color:#285c43}.daily-cash .kvalue{font-size:30px;color:#146c4a}
+@media(max-width:420px){.daily-preview{padding:13px}.daily-preview-title{font-size:19px}.daily-metric{padding:11px}.daily-metric .kvalue{font-size:21px}.daily-cash .kvalue{font-size:26px}}
+
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;background:#e9f4ed;color:#246044;font-size:11px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.toolbar input{max-width:230px}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:20px}
+@media(max-width:720px){.grid{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:repeat(2,1fr)}.formgrid .wide{grid-column:span 2}header{padding:16px}.kvalue{font-size:20px}}
+@media(max-width:420px){.formgrid{grid-template-columns:1fr}.formgrid .wide{grid-column:span 1}.grid{gap:8px}.card{padding:12px}}
+
+/* BM Fixer v2.0 visual refresh */
+:root{--bg:#f5f7f6;--card:#fff;--ink:#17251e;--muted:#718078;--green:#16734f;--line:#e6ece8}
+body{background:radial-gradient(circle at 8% 0%,#e8f5ed 0,transparent 32%),var(--bg);font-family:system-ui,-apple-system,"Noto Sans Bengali",sans-serif}
+header{background:linear-gradient(115deg,#10251f,#174d38 68%,#1b6948);box-shadow:0 8px 24px #10251f18;position:relative;overflow:hidden}
+header:after{content:"";position:absolute;width:220px;height:220px;border:1px solid #ffffff18;border-radius:50%;right:7%;top:-145px;box-shadow:0 0 0 28px #ffffff08,0 0 0 58px #ffffff05;pointer-events:none}
+.brand{letter-spacing:1.2px}.sub{letter-spacing:.1px}
+main{animation:pageIn .42s ease both}
+.card{border-radius:18px;box-shadow:0 5px 20px #163c2610;transition:transform .2s ease,box-shadow .2s ease}
+.card:hover{box-shadow:0 9px 25px #163c2617}
+.tab{border-radius:999px;padding:10px 16px;transition:background .2s ease,color .2s ease,transform .2s ease}
+.tab:hover{transform:translateY(-1px)}.tab.active{box-shadow:0 5px 14px #146c4a28}
+button{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}
+button:active{transform:scale(.97)}
+button.primary{background:linear-gradient(135deg,#16734f,#20865d);box-shadow:0 4px 12px #16734f24}
+input,select,textarea{transition:border-color .18s ease,box-shadow .18s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#279366;box-shadow:0 0 0 3px #27936618}
+.grid .card,.kvalue{animation:riseIn .42s ease both}
+.section.active{animation:sectionIn .28s ease both}
+.badge{font-weight:700}
+.tablewrap{border-radius:14px}
+th{position:sticky;top:0}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sectionIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes riseIn{from{opacity:.45;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+
+.pin-backdrop{position:fixed;inset:0;background:#071b13b8;z-index:9999;display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(5px)}
+.pin-dialog{width:min(100%,390px);background:#fff;border-radius:22px;padding:23px;box-shadow:0 20px 70px #0004;animation:sectionIn .22s ease both}
+.pin-icon{font-size:32px;margin-bottom:8px}.pin-dialog h2{margin-bottom:6px}.pin-dialog input{font-size:22px;letter-spacing:5px;text-align:center}
+.pin-error{font-size:12px;color:#b42318;min-height:18px;margin:5px 0}
+.lock-panel{border:1px dashed #9ab7a5;background:#f5faf6;border-radius:14px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.locked-note{font-size:12px;color:#64736b}
+#ownerLockBtn{background:#e7f0eb;color:#244a3a;padding:8px 12px}
+@media(max-width:520px){header .row{justify-content:flex-end}header .sub{font-size:10px}}
+
+/* Compact icon dashboard inspired by the supplied reference */
+.dash-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px}.dash-head h2{font-size:17px;margin:0}.dash-head p{font-size:11px;color:var(--muted);margin:3px 0 0}.dash-date{width:145px}.dash-date input{padding:7px 8px;font-size:12px}
+.dash-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:11px}.stat-tile{display:flex;align-items:center;gap:9px;min-width:0;background:#fff;border:1px solid #e5ebe7;border-radius:12px;padding:10px}.stat-icon{width:30px;height:30px;flex:0 0 30px;border-radius:9px;background:#f0f6f2;display:grid;place-items:center;font-size:17px}.stat-tile .klabel{font-size:10px;line-height:1.35}.stat-tile .kvalue{font-size:17px;margin-top:2px;line-height:1.25;overflow-wrap:anywhere}.dash-panel{background:#fff;border:1px solid #e1e8e3;border-radius:13px;margin:10px 0;overflow:hidden}.dash-panel-title{font-size:12px;font-weight:750;padding:10px 12px;border-bottom:1px solid #e8eeea;color:#31483c}.dash-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:10px}.dash-action{background:#f4f6f5;color:#293c32;border:1px solid #edf0ee;border-radius:10px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:3px}.dash-action span{font-size:25px;line-height:1.25}.dash-action b{font-size:13px}.dash-action small,.dash-link small{font-size:10px;color:#7b8981;font-weight:500}.dash-links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;padding:8px 5px}.dash-link{background:transparent;color:#34463d;border-radius:9px;padding:8px 2px 7px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}.dash-link span{font-size:25px;line-height:1.25}.dash-link b{font-size:10px;line-height:1.35;text-align:center}.dash-link small{font-size:9px;min-height:12px}.dash-link.locked{opacity:.58}.dash-link.locked .gate:after{content:'🔒 বন্ধ';color:#b45a4e}.dash-link:not(.locked) .gate:after{content:'● চালু';color:#258153}.dash-panel .hint{padding:0 12px 10px}
+.contact-list-grid{display:grid;grid-template-columns:1fr;gap:14px}.contact-switch{display:flex;gap:0;background:#fff;border:1px solid #e4e7eb;border-radius:12px;overflow:hidden;margin:12px 0;box-shadow:0 2px 8px #0000000a}.contact-switch button{flex:1;padding:13px 8px;background:#fff;color:#666;font-size:14px;border-bottom:3px solid transparent}.contact-switch button.active{color:#245fc5;border-bottom-color:#245fc5;font-weight:750}.contact-panel[hidden]{display:none}.contact-list-card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px;box-shadow:0 4px 16px #163c2608}.contact-list-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.contact-list-head h3{font-size:16px;margin:0}.contact-count{font-size:11px;background:#fff0e9;color:#b94c35;border-radius:20px;padding:4px 9px;font-weight:750}.contact-search{margin:8px 0 10px}.contact-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px;border-bottom:1px solid #edf0ee}.contact-row:last-child{border-bottom:0}.contact-name{font-weight:750;font-size:13px}.contact-meta{font-size:11px;color:var(--muted);margin-top:3px}.contact-empty{padding:20px 8px;text-align:center;color:var(--muted);font-size:12px;background:#fafcfb;border-radius:10px}@media(min-width:760px){.contact-list-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:600px){.dash-stats{grid-template-columns:repeat(4,minmax(0,1fr))}.dash-stats.compact{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:380px){.dash-link span{font-size:22px}.dash-link b{font-size:9px}.stat-tile{padding:8px;gap:6px}.stat-icon{width:26px;height:26px;flex-basis:26px;font-size:15px}.stat-tile .kvalue{font-size:15px}}
+
+
+.main-nav{display:flex;gap:8px;margin:0 0 14px;padding:5px;background:#eaf0ec;border-radius:14px}
+.main-nav .tab{flex:1;text-align:center;border-radius:10px;padding:9px 12px;font-size:13px}
+.settings-card{margin-top:4px}.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px}
+.settings-item{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:5px;background:#f5f8f6;border:1px solid #e7eee9;border-radius:13px;padding:13px;color:#263c30;min-height:104px}
+.settings-item span{font-size:23px;line-height:1.2}.settings-item b{font-size:13px}.settings-item small{font-size:10px;color:#78867e;font-weight:500;line-height:1.4}
+@media(min-width:620px){.settings-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:76px}
+.brand-block{display:flex;flex-direction:column;gap:4px;min-width:0;align-items:flex-end}
+.header-date{display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:11px;color:#d0e2d7}
+.header-date input{width:auto;max-width:145px;padding:3px 5px;border:0;border-radius:7px;background:#ffffff18;color:#fff;font-size:11px;color-scheme:dark}
+.header-actions{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+.icon-circle{width:42px;height:42px;padding:0;border-radius:50%;display:grid;place-items:center;border:1px solid #ffffff45;box-shadow:0 3px 10px #0002;font-size:22px;line-height:1}
+.whatsapp-circle{background:#20bd62;color:white}
+.whatsapp-circle svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.whatsapp-circle svg path+path{fill:currentColor;stroke:none}
+.settings-circle{background:#ffffffed;color:#174d38;font-size:23px}
+.settings-circle.active{background:#dff5e8;color:#146c4a}
+body{padding-bottom:20px}
+@media(max-width:420px){header{padding:12px 14px}.brand{font-size:19px}.header-date input{max-width:130px}.icon-circle{width:39px;height:39px}}
+.whatsapp-settings{margin:12px 0;padding:12px;background:#fbfdfb}
+.whatsapp-settings h3{margin:0 0 6px;font-size:15px}
+
+
+/* Professional BM Fixer logo header */
+.brand-block{display:flex;flex-direction:row;align-items:center;gap:12px;min-width:0}
+.brand-logo{width:66px;height:66px;flex:0 0 66px;object-fit:contain;border-radius:50%;background:#fff;box-shadow:0 3px 12px #0002;border:2px solid #ffffffa8}
+.brand-copy{display:flex;flex-direction:column;gap:3px;min-width:0;align-items:flex-start}
+.brand-copy .brand{font-size:20px;line-height:1.15;letter-spacing:1.1px}
+.brand-copy .sub{font-size:10px;color:#d2e7db;letter-spacing:.25px}
+.brand-copy .header-date{justify-content:flex-start;margin-top:2px}
+@media(max-width:420px){.brand-logo{width:54px;height:54px;flex-basis:54px}.brand-copy .brand{font-size:17px}.brand-copy .sub{font-size:9px}.brand-block{gap:9px}}
+
+/* Clear two-column daily/monthly dashboard overview */
+.dash-overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch;margin:0 0 12px}
+.overview-panel{margin:0;min-width:0;background:linear-gradient(180deg,#fff,#fbfdfb);box-shadow:0 4px 16px #163c260b}
+.overview-panel .dash-panel-title{font-size:13px;text-align:center;padding:12px 5px;color:#174b36;background:#f4f8f5;white-space:nowrap}
+.overview-list{display:grid;grid-template-columns:1fr;gap:7px;padding:8px}
+.overview-list .stat-tile{padding:9px 7px;gap:7px;border-radius:10px;min-height:58px;box-shadow:0 1px 4px #10251f08}
+.overview-list .stat-icon{width:29px;height:29px;flex:0 0 29px;font-size:16px}
+.overview-list .klabel{font-size:11px;line-height:1.35;color:#52645a;font-weight:600}
+.overview-list .kvalue{font-size:16px;line-height:1.25;font-weight:800;margin-top:3px;overflow-wrap:anywhere;color:#1d3026}
+.overview-list .kvalue.green{color:#16734f}.overview-list .kvalue.red{color:#b83b3b}
+@media(max-width:370px){.dash-overview-grid{gap:7px}.overview-list{padding:6px;gap:6px}.overview-list .stat-tile{padding:8px 5px;gap:5px}.overview-list .stat-icon{width:25px;height:25px;flex-basis:25px;font-size:14px}.overview-list .klabel{font-size:10px}.overview-list .kvalue{font-size:14px}.overview-panel .dash-panel-title{font-size:11px}}
+
+
+/* BM Fixer brand palette: coral, orange and warm amber from the shop logo */
+:root{--brand-coral:#f04b3d;--brand-orange:#ff783d;--brand-amber:#ff9a42;--brand-deep:#bd352e}
+header{background:linear-gradient(112deg,#d93b35 0%,#ef563d 43%,#ff783d 78%,#f69a3d 100%);box-shadow:0 8px 24px #c847352b}
+header:after{border-color:#ffffff28;box-shadow:0 0 0 28px #ffffff12,0 0 0 58px #ffffff08}
+.brand-logo{border:2px solid #fff;box-shadow:0 4px 15px #7d241e35}
+.brand-copy .sub{color:#fff0e8}
+.header-date{color:#fff3ed}
+.header-date input{background:#ffffff22;color:#fff;border:1px solid #ffffff35}
+.header-date input:focus{box-shadow:0 0 0 3px #ffffff30}
+.icon-circle{width:44px;height:44px;border:1px solid #ffffff70;box-shadow:0 4px 13px #76271e35;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
+.icon-circle:hover{transform:translateY(-2px);box-shadow:0 7px 17px #76271e40;filter:brightness(1.04)}
+.whatsapp-circle{background:linear-gradient(145deg,#28d66f,#0b9f59);color:#fff;border:2px solid #ffffffd9}
+.whatsapp-circle svg{width:26px;height:26px;stroke-width:1.85;filter:drop-shadow(0 1px 1px #075b34aa)}
+.support-circle{background:linear-gradient(145deg,#fff0d8,#ffd18a);color:#9b5200;border:2px solid #fff}.support-circle svg{width:24px;height:24px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 1px #075b3420)}.support-circle:hover svg,.support-circle:focus-visible svg{animation:supportNudge .55s ease}.settings-circle{background:linear-gradient(145deg,#fff,#fff1e8);color:#d94735;border:2px solid #ffffff}
+.settings-circle svg{width:23px;height:23px;display:block;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.settings-circle.active{background:#fff0e7;color:#bd352e}
+@media(max-width:420px){.icon-circle{width:40px;height:40px}.whatsapp-circle svg{width:24px;height:24px}.settings-circle svg{width:22px;height:22px}}
+
+/* Refined micro-animations for the two header actions */
+.header-actions{gap:11px}
+.icon-circle{position:relative;isolation:isolate;overflow:visible;-webkit-tap-highlight-color:transparent}
+.whatsapp-circle:before,.whatsapp-circle:after{content:"";position:absolute;inset:-4px;border:1.5px solid #35d879;border-radius:50%;z-index:-1;opacity:0;pointer-events:none;animation:waPulse 3.2s ease-out infinite}
+.whatsapp-circle:after{animation-delay:1.6s}
+.whatsapp-circle svg{transform-origin:50% 50%;animation:waFloat 3s ease-in-out infinite;transition:transform .25s ease}
+.whatsapp-circle:hover svg,.whatsapp-circle:focus-visible svg{transform:scale(1.13) rotate(-7deg)}
+.settings-circle svg{transform-origin:50% 50%;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.settings-circle:hover svg,.settings-circle:focus-visible svg{transform:rotate(90deg)}
+.settings-circle:active svg{transform:rotate(180deg) scale(.9);transition-duration:.18s}
+.icon-circle:focus-visible{outline:3px solid #fff;outline-offset:4px}
+@keyframes supportNudge{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg)}75%{transform:rotate(9deg)}}
+@keyframes waPulse{0%{transform:scale(.92);opacity:.55}75%,100%{transform:scale(1.42);opacity:0}}
+@keyframes waFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
+@media(prefers-reduced-motion:reduce){.whatsapp-circle:before,.whatsapp-circle:after,.whatsapp-circle svg{animation:none}.icon-circle,.settings-circle svg{transition:none}}
+
+
+
+/* Dhaka prayer timetable panel */
+.header-actions{transform:translateY(-7px)}
+.prayer-strip{max-width:1100px;margin:10px auto 14px;padding:12px 14px;border:1px solid #f3d8c9;border-radius:16px;background:linear-gradient(115deg,#fffaf6,#fff1e8);box-shadow:0 5px 16px #a9432410;color:#63372d}
+.prayer-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}.prayer-head b{font-size:14px}.prayer-head small{display:block;color:#98766c;font-size:10px;margin-top:2px}.prayer-head>span{font-size:10px;color:#98766c}
+.prayer-times{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.prayer-times>div{background:#fff;border:1px solid #f3e4dc;border-radius:10px;padding:8px 3px;text-align:center}.prayer-times b{display:block;font-size:11px;color:#8d6255;font-weight:600}.prayer-times strong{display:block;font-size:14px;color:#b83c2f;margin-top:4px;font-variant-numeric:tabular-nums}.prayer-next{font-size:10px;color:#8c665b;margin-top:9px;text-align:center}
+@media(max-width:520px){.prayer-strip{margin:8px 10px 12px;padding:10px}.prayer-times{gap:4px}.prayer-times>div{padding:7px 1px}.prayer-times b{font-size:10px}.prayer-times strong{font-size:12px}.header-actions{transform:translateY(-6px)}}
+
+</style>
+
+<style>
+.cloud-settings{margin:12px 0 16px;border:1px solid #d8e2ef;border-radius:12px;background:#f7faff;overflow:hidden}
+.cloud-settings>summary{padding:13px 15px;font-weight:700;color:#24466f;cursor:pointer;list-style:none}
+.cloud-settings>summary::-webkit-details-marker{display:none}
+.cloud-settings>summary:after{content:'＋';float:right}
+.cloud-settings[open]>summary:after{content:'−'}
+.cloud-settings #cloudPanel{margin:0;max-width:none;border:0;border-top:1px solid #d8e2ef;border-radius:0;background:transparent}
+</style>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+<style>
+#cloudPanel{margin:14px auto;max-width:1180px;padding:16px;border:1px solid #b9c9dc;border-radius:14px;background:#f4f8ff;color:#172033}
+#cloudPanel h2{margin:0 0 8px;font-size:19px}#cloudPanel .cloudgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:10px 0}
+#cloudPanel input{width:100%;padding:10px;border:1px solid #b8c3d1;border-radius:8px;box-sizing:border-box}#cloudPanel button{padding:10px 14px;border:0;border-radius:8px;background:#174ea6;color:white;font-weight:700;margin:4px 5px 4px 0}
+#cloudStatus{padding:9px;background:#fff;border-radius:8px;font-size:13px;line-height:1.6}#cloudPanel small{color:#48566a}
+</style>
+
+
+<script>
+(()=>{
+ const el=id=>document.getElementById(id), status=el('cloudStatus');
+ let libraryPromise=null;
+ function loadSupabase(){if(window.supabase?.createClient)return Promise.resolve();if(libraryPromise)return libraryPromise;libraryPromise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';s.async=true;s.onload=()=>window.supabase?.createClient?resolve():reject(new Error('Supabase লাইব্রেরি প্রস্তুত হয়নি।'));s.onerror=()=>reject(new Error('Supabase লাইব্রেরি ডাউনলোড হয়নি। ইন্টারনেট সংযোগ পরীক্ষা করুন।'));document.head.appendChild(s)});return libraryPromise;}
+ const saved=(()=>{try{return JSON.parse(localStorage.getItem('bmfixer_cloud_config')||'{}')}catch(e){return {}}})();
+ el('cloudUrl').value=saved.url||''; el('cloudAnon').value=saved.key||'';
+ let client=null;
+ const say=(msg)=>{status.textContent=msg};
+ function makeClient(){const url=el('cloudUrl').value.trim().replace(/\/$/,'');const key=el('cloudAnon').value.trim();if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)||!key){throw new Error('Project URL এবং public anon key সঠিকভাবে দিন।')};if(!window.supabase?.createClient)throw new Error('সংযোগ লাইব্রেরি এখনো প্রস্তুত নয়।');localStorage.setItem('bmfixer_cloud_config',JSON.stringify({url,key}));client=window.supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});window.bmSupabaseClient=client;return client}
+ el('cloudConnect').addEventListener('click',async()=>{try{say('অনলাইন সংযোগের লাইব্রেরি লোড হচ্ছে…');await loadSupabase();makeClient();const {data,error}=await client.auth.getSession();if(error)throw error;say('Supabase সংযোগ কনফিগারেশন সংরক্ষিত। '+(data.session?'আপনি লগইন করা আছেন।':'এখন কর্মী/অ্যাডমিন ইমেইল ও পাসওয়ার্ড দিয়ে লগইন করুন।'))}catch(e){say('সংযোগ হয়নি: '+e.message)}});
+ el('cloudLogin').addEventListener('click',async()=>{try{if(!window.supabase?.createClient)await loadSupabase();if(!client)makeClient();const email=el('cloudEmail').value.trim(),password=el('cloudPassword').value;if(!email||!password)throw new Error('ইমেইল ও পাসওয়ার্ড দিন।');say('লগইন যাচাই হচ্ছে…');const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;const {data:profile,error:pe}=await client.from('profiles').select('display_name,role,org_id,branch_id,staff_id,is_active').eq('user_id',data.user.id).maybeSingle();if(pe)throw pe;if(!profile||!profile.is_active){await client.auth.signOut();throw new Error('এই ইউজারের সক্রিয় BM Fixer প্রোফাইল পাওয়া যায়নি। অ্যাডমিনকে প্রোফাইল যাচাই করতে বলুন।')}window.bmCloudContext={userId:data.user.id,profile};el('cloudSync').disabled=false;say('লগইন সফল: '+profile.display_name+' ('+profile.role+'). এখন হিসাব Sync করা যাবে।');el('cloudPassword').value=''}catch(e){say('লগইন হয়নি: '+e.message)}});
+ el('cloudLogout').addEventListener('click',async()=>{try{if(!window.supabase?.createClient)await loadSupabase();if(!client)makeClient();const {error}=await client.auth.signOut();if(error)throw error;window.bmCloudContext=null;el('cloudSync').disabled=true;say('লগআউট সম্পন্ন।')}catch(e){say('লগআউট হয়নি: '+e.message)}});
+ if(saved.url&&saved.key){el('cloudUrl').value=saved.url;el('cloudAnon').value=saved.key;say('আগের সংযোগের তথ্য পাওয়া গেছে। প্রয়োজন হলে সংযোগ যাচাই করুন।')}
+})();
+</script>
+
+<header><div class="brand-block"><img class="brand-logo" src="data:image/jpeg;base64,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" alt="BM Fixer লোগো"><div class="brand-copy"><div class="brand">BM FIXER</div><div class="sub">Mobile Service &amp; Repair</div><div class="header-date"><span>তারিখ</span><input type="date" id="dashDate" aria-label="ড্যাশবোর্ডের তারিখ"></div></div></div><div class="header-actions"><button class="icon-circle whatsapp-circle" id="whatsappBtn" type="button" aria-label="WhatsApp গ্রুপ খুলুন" title="WhatsApp গ্রুপ"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.2A12.3 12.3 0 0 0 5.4 21.7L4 28l6.5-1.7A12.3 12.3 0 1 0 16 3.2Z"/><path d="M12.1 10.2c-.4-.8-.8-.8-1.2-.8h-.9c-.3 0-.8.1-1.2.6-.4.5-1.6 1.6-1.6 3.9s1.7 4.5 1.9 4.8c.2.3 3.3 5.2 8.1 7.1 4 1.6 4.8 1.3 5.7 1.2.9-.1 2.8-1.1 3.2-2.2.4-1.1.4-2 .3-2.2-.1-.2-.4-.3-.9-.6s-2.8-1.4-3.2-1.5c-.4-.2-.7-.2-1 .2-.3.5-1.2 1.5-1.5 1.8-.3.3-.6.4-1.1.1-.5-.2-2-.7-3.8-2.3-1.4-1.2-2.3-2.8-2.6-3.3-.3-.5 0-.8.2-1 .2-.2.5-.6.7-.9.2-.3.3-.5.5-.8.2-.3.1-.6 0-.9-.1-.2-1-2.5-1.4-3.2Z"/></svg></button><button class="icon-circle support-circle" id="supportCallBtn" type="button" aria-label="সাপোর্টে কল করুন" title="সাপোর্টে কল করুন"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 14.2 5l3-.2.8 2.9 2.6 1.5-1 2.8 1 2.8-2.6 1.5-.8 2.9-3-.2-2.2 2.2-2.2-2.2-3 .2-.8-2.9-2.6-1.5 1-2.8-1-2.8 2.6-1.5.8-2.9 3 .2L12 2.8Z"/><circle cx="12" cy="10" r="2.4"/><path d="M7.8 17.2c.6-2 2-3 4.2-3s3.6 1 4.2 3"/></svg></button><button class="icon-circle settings-circle tab" data-tab="settings" type="button" aria-label="সেটিংস" title="সেটিংস"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.2a3.8 3.8 0 1 0 0 7.6 3.8 3.8 0 0 0 0-7.6Z"/><path d="m19.4 13.5 1.1.9-1.4 2.4-1.4-.5a7.8 7.8 0 0 1-1.7 1l-.2 1.5h-2.8l-.3-1.5a7.8 7.8 0 0 1-1.7-1l-1.4.5-1.4-2.4 1.1-.9a7.2 7.2 0 0 1 0-2l-1.1-.9 1.4-2.4 1.4.5a7.8 7.8 0 0 1 1.7-1l.3-1.5h2.8l.2 1.5a7.8 7.8 0 0 1 1.7 1l1.4-.5 1.4 2.4-1.1.9a7.2 7.2 0 0 1 0 2Z"/></svg></button></div></header>
+
+<section class="prayer-strip" id="prayerStrip" aria-label="ঢাকার নামাজের সময়সূচী">
+ <div class="prayer-head"><div><b>🕌 নামাজের সময়সূচী</b><small>ঢাকা • আজকের সময়</small></div><span id="prayerDate">সময় লোড হচ্ছে…</span></div>
+ <div class="prayer-times" id="prayerTimes"><div><b>ফজর</b><strong>--:--</strong></div><div><b>যোহর</b><strong>--:--</strong></div><div><b>আসর</b><strong>--:--</strong></div><div><b>মাগরিব</b><strong>--:--</strong></div><div><b>এশা</b><strong>--:--</strong></div></div>
+ <div class="prayer-next" id="prayerNext">ঢাকার নামাজের সময়সূচী আনা হচ্ছে…</div>
+</section>
+<main>
+
+<section id="dashboard" class="section active">
+
+<div class="dash-overview-grid">
+<div class="dash-panel overview-panel"><div class="dash-panel-title">☀️ আজকের হিসাব</div><div class="overview-list">
+<div class="stat-tile"><span class="stat-icon">💰</span><div><div class="klabel">সার্ভিস আয়</div><div class="kvalue green" id="dIncome">৳০</div></div></div>
+<div class="stat-tile"><span class="stat-icon">🔧</span><div><div class="klabel">কাজের সংখ্যা</div><div class="kvalue" id="dJobs">০</div></div></div>
+<div class="stat-tile"><span class="stat-icon">🧾</span><div><div class="klabel">খরচ</div><div class="kvalue red" id="dExpense">৳০</div></div></div>
+<div class="stat-tile"><span class="stat-icon">📈</span><div><div class="klabel">নেট আয়</div><div class="kvalue" id="dNet">৳০</div></div></div>
+</div></div>
+<div class="dash-panel overview-panel"><div class="dash-panel-title">🗓️ এই মাসের হিসাব</div><div class="overview-list">
+<div class="stat-tile"><span class="stat-icon">💵</span><div><div class="klabel">সার্ভিস আয়</div><div class="kvalue green" id="mIncome">৳০</div></div></div>
+<div class="stat-tile"><span class="stat-icon">🛠️</span><div><div class="klabel">কাজের সংখ্যা</div><div class="kvalue" id="mJobs">০</div></div></div>
+<div class="stat-tile"><span class="stat-icon">💸</span><div><div class="klabel">খরচ</div><div class="kvalue red" id="mExpense">৳০</div></div></div>
+<div class="stat-tile"><span class="stat-icon">🧮</span><div><div class="klabel">নেট আয়</div><div class="kvalue" id="mNet">৳০</div></div></div>
+</div></div>
+</div>
+<div class="dash-panel"><div class="dash-panel-title">⚡ দ্রুত কাজ</div><div class="dash-actions">
+<button class="dash-action" data-shortcut="jobs"><span>🛠️</span><b>নতুন সার্ভিস</b><small>সার্ভিস এন্ট্রি</small></button>
+<button class="dash-action" data-shortcut="purchases"><span>🔩</span><b>পার্টস কেনা</b><small>সার্ভিসের মালামাল</small></button>
+</div></div>
+<div class="dash-panel"><div class="dash-panel-title">📚 খাতা সমূহ</div><div class="dash-links">
+<button class="dash-link" data-shortcut="purchaseLedger"><span>📋</span><b>পার্টস কেনার খাতা</b><small class="gate"></small></button>
+<button class="dash-link" data-shortcut="serviceLedger"><span>🔧</span><b>সার্ভিস খাতা</b><small class="gate"></small></button>
+<button class="dash-link" data-shortcut="expenses"><span>💳</span><b>খরচের খাতা</b><small class="gate"></small></button>
+<button class="dash-link" data-shortcut="contactLists"><span>👥</span><b>কাস্টমার / সাপ্লায়ার</b><small class="gate"></small></button>
+</div></div>
+<div class="dash-panel"><div class="dash-panel-title">🏪 আপনার ব্যবসার জন্য</div><div class="dash-links">
+<button class="dash-link" data-shortcut="team"><span>🧰</span><b>টিম</b><small class="gate"></small></button>
+<button class="dash-link" data-shortcut="targets"><span>🎯</span><b>টার্গেট</b><small class="gate"></small></button>
+<button class="dash-link" data-shortcut="report"><span>📊</span><b>রিপোর্ট</b><small class="gate"></small></button>
+<button class="dash-link" data-shortcut="access"><span>⚙️</span><b>অ্যাক্সেস</b><small>অনুমতি সেটিং</small></button>
+</div></div>
+<div class="dash-panel"><div class="dash-panel-title">🎯 অটোমেটিক টার্গেট</div><div class="dash-stats compact">
+<div class="stat-tile"><span class="stat-icon">🏁</span><div><div class="klabel">আজকের টিম টার্গেট</div><div class="kvalue" id="todayTarget">৳০</div></div></div>
+<div class="stat-tile"><span class="stat-icon">💹</span><div><div class="klabel">আজকের নেট প্রফিট</div><div class="kvalue green" id="todayProfit">৳০</div></div></div>
+<div class="stat-tile"><span class="stat-icon">📅</span><div><div class="klabel">আগামীকালের টিম টার্গেট</div><div class="kvalue" id="tomorrowTarget">৳০</div></div></div>
+<div class="stat-tile"><span class="stat-icon">⏳</span><div><div class="klabel">মাসিক টার্গেটের বাকি</div><div class="kvalue" id="targetRemaining">৳০</div></div></div>
+</div><div class="hint" id="targetHint">টার্গেট পাতায় মাসিক টার্গেট সেট করুন।</div></div>
+
+</section>
+<section id="jobs" class="section">
+<div class="card">
+<h2 id="jobFormTitle">নতুন সার্ভিস এন্ট্রি</h2>
+<form id="jobForm">
+<input type="hidden" id="jobId">
+<div class="formgrid">
+<div class="field"><label>তারিখ *</label><input type="date" id="jobDate" required></div>
+<div class="field"><label>কাস্টমারের নাম *</label><input id="customer" placeholder="নাম লিখুন" required></div>
+<div class="field"><label>মোবাইল নম্বর</label><input id="phone" inputmode="tel" placeholder="01XXXXXXXXX"></div>
+<div class="field"><label>মোবাইল মডেল</label><input id="model" placeholder="যেমন: Redmi Note 8"></div>
+<div class="field"><label>কাজের বিবরণ *</label><input id="work" placeholder="যেমন: ডিসপ্লে পরিবর্তন" required></div>
+<div class="field"><label>কাজ করেছেন</label><input id="staff" list="staffOptions" placeholder="টেকনিশিয়ানের নাম"><datalist id="staffOptions"><option value="শরীফ"><option value="আরাফাত"><option value="ইমাদ"></datalist></div>
+<div class="field"><label>সার্ভিস চার্জ / আয় (৳) *</label><input type="number" id="amount" min="0" step="1" required placeholder="০"></div>
+<div class="field"><label>পার্টস/মালামাল খরচ (৳)</label><input type="number" id="partCost" min="0" step="1" value="0"></div>
+<div class="field"><label>অবস্থা</label><select id="status"><option>ডেলিভারি হয়েছে</option><option>কাজ চলছে</option><option>পেন্ডিং</option></select></div>
+</div>
+<div class="actions"><button class="primary" type="submit">সেভ করুন</button><button class="secondary" type="button" id="resetJob">ফর্ম পরিষ্কার</button></div>
+<p class="hint">নেট সার্ভিস লাভ = সার্ভিস আয় − পার্টস/মালামাল খরচ। দোকানের অন্যান্য খরচ আলাদা “খরচ” পাতায় লিখুন।</p>
+</form></div>
+</section>
+<section id="serviceLedger" class="section"><div class="card"><h2>📒 সার্ভিস খাতা</h2><p class="hint">আপনার দোকানে করা সব সার্ভিসের তালিকা, মাসভিত্তিক হিসাব ও কাস্টমার খুঁজুন।</p><div class="toolbar"><input id="jobSearch" placeholder="নাম / ফোন / মডেল খুঁজুন"><input type="month" id="jobMonth"></div><div class="tablewrap"><table><thead><tr><th>তারিখ</th><th>কাস্টমার</th><th>মডেল ও কাজ</th><th>আয়</th><th>পার্টস খরচ</th><th>নেট</th><th>অবস্থা</th><th>অ্যাকশন</th></tr></thead><tbody id="jobRows"></tbody></table></div></div>
+</section>
+<section id="contactLists" class="section">
+<div class="card"><div class="row between" style="margin-bottom:12px"><div><h2 style="margin:0">👥 কাস্টমার ও সাপ্লায়ার লিস্ট</h2><p class="hint" style="margin:4px 0 0">সার্ভিস এন্ট্রি ও পার্টস কেনার তথ্য থেকে তালিকা স্বয়ংক্রিয়ভাবে তৈরি হবে।</p></div></div>
+<div class="contact-switch" role="tablist" aria-label="কাস্টমার ও সাপ্লায়ার"><button type="button" class="active" id="showCustomers" role="tab" aria-selected="true">কাস্টমার <span id="customerCount">০ জন</span></button><button type="button" id="showSuppliers" role="tab" aria-selected="false">সাপ্লায়ার <span id="supplierCount">০ জন</span></button></div>
+<div class="contact-list-grid">
+<div class="contact-list-card contact-panel" id="customerPanel"><div class="contact-list-head"><h3>👤 কাস্টমার লিস্ট</h3></div><input class="contact-search" id="customerListSearch" placeholder="নাম / ফোন / মডেল দিয়ে খুঁজুন"><div id="customerListRows"></div></div>
+<div class="contact-list-card contact-panel" id="supplierPanel" hidden><div class="contact-list-head"><h3>🏪 সাপ্লায়ার লিস্ট</h3></div><input class="contact-search" id="supplierListSearch" placeholder="সাপ্লায়ারের নাম দিয়ে খুঁজুন"><div id="supplierListRows"></div></div>
+</div></div></section>
+<section id="purchases" class="section"><div class="card"><h2>নতুন পার্টস কেনা এন্ট্রি</h2><form id="purchaseForm"><div class="formgrid"><div class="field"><label>তারিখ *</label><input type="date" id="purchaseDate" required></div><div class="field"><label>পার্টসের নাম *</label><input id="purchaseItem" required></div><div class="field"><label>দোকান / সরবরাহকারী</label><input id="purchaseParty" list="supplierNameOptions" autocomplete="off"><datalist id="supplierNameOptions"></datalist></div><div class="field"><label>সাপ্লায়ারের মোবাইল নম্বর</label><input id="purchasePartyPhone" type="tel" inputmode="tel" placeholder="01XXXXXXXXX"></div><div class="field"><label>পরিমাণ *</label><input type="number" id="purchaseQty" min="0.01" step="any" required></div><div class="field"><label>প্রতি পিস ক্রয়দর (৳) *</label><input type="number" id="purchasePrice" min="0" step="any" required></div><div class="field"><label>নোট</label><input id="purchaseNote"></div></div><button class="primary" type="submit">পার্টস কেনা সেভ করুন</button></form></div></section>
+<section id="purchaseLedger" class="section"><div class="card"><h2>পার্টস কেনার খাতা</h2><input type="month" id="purchaseLedgerMonth"><div id="purchaseLedgerSummary" class="hint"></div><div class="tablewrap"><table><thead><tr><th>তারিখ</th><th>পণ্য</th><th>সরবরাহকারী</th><th>পরিমাণ</th><th>দর</th><th>মোট</th><th>নোট</th><th>অ্যাকশন</th></tr></thead><tbody id="purchaseRows"></tbody></table></div></div></section><section id="expenses" class="section">
+<div class="card"><h2>নতুন খরচ যোগ করুন</h2>
+<form id="expenseForm"><input type="hidden" id="expenseId"><div class="formgrid">
+<div class="field"><label>তারিখ *</label><input type="date" id="expenseDate" required></div>
+<div class="field"><label>খরচের খাত *</label><select id="expenseType"><option>দোকান ভাড়া</option><option>যাতায়াত</option><option>খাবার</option><option>পার্টস/মালামাল কেনা</option><option>বিদ্যুৎ/ইন্টারনেট</option><option>বেতন</option><option>অন্যান্য</option></select></div>
+<div class="field"><label>টাকার পরিমাণ (৳) *</label><input type="number" id="expenseAmount" min="1" required></div>
+<div class="field wide"><label>বিস্তারিত</label><input id="expenseNote" placeholder="প্রয়োজনে লিখুন"></div>
+</div><div class="actions"><button class="primary" type="submit">খরচ সেভ করুন</button><button class="secondary" type="button" id="resetExpense">ফর্ম পরিষ্কার</button></div></form></div>
+<div class="tablewrap" style="margin-top:14px"><table><thead><tr><th>তারিখ</th><th>খাত</th><th>বিস্তারিত</th><th>পরিমাণ</th><th>অ্যাকশন</th></tr></thead><tbody id="expenseRows"></tbody></table></div>
+</section>
+<section id="targets" class="section">
+<div class="card">
+<div class="row between"><h2>মাসিক টিম টার্গেট সেট করুন</h2><span class="badge" id="targetLockBadge">অ্যাক্সেস নিয়ন্ত্রণ</span></div>
+
+<div id="targetEditor">
+<p class="hint">আপনি শুধু মাসের মোট টার্গেট দেবেন। অ্যাপ ক্যালেন্ডারের দিন ধরে দৈনিক টার্গেট হিসাব করবে এবং সক্রিয় কর্মীদের মধ্যে সমানভাবে ভাগ করবে।</p>
+<div class="formgrid">
+<div class="field"><label>টার্গেটের মাস</label><input type="month" id="targetMonth"></div>
+<div class="field"><label>মাসিক টিম নেট প্রফিট টার্গেট (৳)</label><input type="number" min="0" step="1" id="monthlyTarget" placeholder="যেমন: 50000"></div>
+<div class="field" style="align-self:end"><button class="primary" type="button" id="saveTarget">মাসিক টার্গেট সেভ করুন</button></div>
+</div>
+<div class="hint" id="targetSaveNote" style="margin-top:10px"></div>
+</div>
+</div>
+<div class="card" style="margin-top:14px">
+<h2>নির্বাচিত মাসের টার্গেট পরিকল্পনা</h2>
+<div class="grid" style="margin:0">
+<div><div class="klabel">মাসিক টার্গেট</div><div class="kvalue" id="planMonthly">৳০</div></div>
+<div><div class="klabel">এ পর্যন্ত নেট প্রফিট</div><div class="kvalue green" id="planActual">৳০</div></div>
+<div><div class="klabel">টার্গেট বাকি</div><div class="kvalue red" id="planLeft">৳০</div></div>
+<div><div class="klabel">আজকের টিম টার্গেট</div><div class="kvalue" id="planDaily">৳০</div></div>
+</div>
+<div id="staffTargetRows" class="tablewrap" style="margin-top:12px"></div>
+<p class="hint" style="margin-top:10px">হিসাবের নিয়ম: প্রতিদিনের প্রয়োজনীয় টিম টার্গেট = (মাসিক টার্গেট − আগের দিনগুলোতে অর্জিত নেট প্রফিট) ÷ আজসহ মাসের বাকি ক্যালেন্ডার দিন। আগামীকালের টার্গেট আজকের নেট প্রফিট যোগ করে আগামীকাল থেকে মাসের শেষ দিন পর্যন্ত ভাগ করে নির্ধারণ হবে।</p>
+</div>
+</section>
+
+<section id="team" class="section">
+ <div class="card">
+  <div class="row between"><div><h2>কর্মী ব্যবস্থাপনা</h2><p class="hint">নতুন কর্মী যোগ করুন। কর্মী চলে গেলে ডিলিট না করে নিষ্ক্রিয় করুন—পুরোনো হিসাব থাকবে।</p></div><span class="badge">ডাইনামিক টিম</span></div>
+  <form id="staffForm">
+   <div class="formgrid">
+    <div class="field"><label>টিম মেম্বারের নাম *</label><input id="staffName" required placeholder="যেমন: নতুন কর্মী"></div>
+    <div class="field"><label>দায়িত্ব</label><select id="staffRole"><option>সার্ভিসিং</option><option>প্রোডাক্ট সেলস</option><option>সার্ভিসিং ও সেলস</option><option>সহকারী</option></select></div>
+    <div class="field"><label>মোবাইল নম্বর</label><input id="staffPhone" inputmode="tel" placeholder="01XXXXXXXXX"></div>
+    <div class="field"><label>মাসিক নির্ধারিত বেতন (৳)</label><input id="staffSalary" type="number" min="0" step="1" placeholder="যেমন: ৮০০০"></div>
+   </div>
+   <div class="actions"><button class="primary" type="submit">কর্মী যোগ করুন</button></div>
+  </form>
+ </div>
+ <div class="card" style="margin-top:14px">
+  <h2>বর্তমান ও সাবেক কর্মী</h2>
+  <div id="staffList" class="tablewrap"></div>
+ </div>
+
+ <div class="card" style="margin-top:14px">
+  <div class="row between"><div><h2>বেতন ও অগ্রিম ব্যবস্থাপনা</h2><p class="hint">মালিকের ব্যবস্থাপনার জন্য। টিম মেম্বারের নির্ধারিত বেতন থেকে নির্বাচিত মাসের অগ্রিম বাদ দিয়ে বাকি বেতন দেখাবে। অনলাইন সংস্করণে এই অংশ Admin ছাড়া কেউ দেখতে পারবে না।</p></div><span class="badge">মালিকের হিসাব</span></div>
+  <div class="formgrid">
+   <div class="field"><label>বেতন হিসাবের মাস</label><input type="month" id="payrollMonth"></div>
+   <div class="field"><label>অগ্রিম নেওয়া কর্মী</label><select id="advanceStaff"></select></div>
+   <div class="field"><label>অগ্রিমের তারিখ</label><input type="date" id="advanceDate"></div>
+   <div class="field"><label>অগ্রিম টাকার পরিমাণ (৳)</label><input type="number" id="advanceAmount" min="1" step="1" placeholder="যেমন: ১০০০"></div>
+   <div class="field"><label>নোট (ঐচ্ছিক)</label><input id="advanceNote" placeholder="যেমন: ব্যক্তিগত প্রয়োজনে"></div>
+  </div>
+  <div class="actions"><button class="primary" id="addAdvance" type="button">অগ্রিম যোগ করুন</button></div>
+  <div id="payrollSummary" class="tablewrap" style="margin-top:14px"></div>
+  <div id="advanceHistory" style="margin-top:12px"></div>
+ </div>
+
+ <div class="card" style="margin-top:14px">
+  <h2>অ্যাকাউন্ট ও অনলাইন ব্যবস্থার অবস্থা</h2>
+  <p class="hint">বেতন ও অগ্রিমের অংশটি এই প্রিভিউতে কর্মী ব্যবস্থাপনার ভেতরে রাখা হয়েছে। তবে এটি এখনো লোকাল প্রোটোটাইপ—একই ডিভাইসে অন্য কেউ অ্যাপ খুললে দেখতে পারে। অনলাইন সংস্করণে Admin-only server permission না দেওয়া পর্যন্ত এটিকে গোপন/নিরাপদ ধরে ব্যবহার করবেন না।</p>
+  <div class="row"><span class="badge">লোকাল ডেটা</span><span class="badge">হোস্টিং-স্বাধীন UI</span><span class="badge">JSON ব্যাকআপ</span></div>
+ </div>
+</section>
+
+<section id="settings" class="section">
+<div class="card settings-card">
+<h2>⚙️ সেটিংস ও অন্যান্য অপশন</h2>
+<details id="cloudSettings" class="cloud-settings"><summary>☁️ অনলাইন সংযোগ ও Sync সেটিংস</summary>
+<section id="cloudPanel">
+ <h2>☁️ BM Fixer অনলাইন সংযোগ</h2>
+ <div id="cloudStatus">অনলাইন সংযোগ এখনো সেটআপ করা হয়নি। আপনার পুরোনো লোকাল হিসাব আগের মতোই কাজ করবে।</div>
+ <div class="cloudgrid">
+  <div><label for="cloudUrl">Supabase Project URL</label><input id="cloudUrl" placeholder="https://xxxx.supabase.co" autocomplete="url"></div>
+  <div><label for="cloudAnon">Supabase anon / publishable key</label><input id="cloudAnon" placeholder="শুধু public anon key দিন" autocomplete="off"></div>
+ </div>
+ <button type="button" id="cloudConnect">সংযোগ যাচাই ও সংরক্ষণ</button>
+ <div class="cloudgrid">
+  <div><label for="cloudEmail">লগইন ইমেইল</label><input id="cloudEmail" type="email" autocomplete="username" placeholder="আপনার Supabase Auth ইমেইল"></div>
+  <div><label for="cloudPassword">পাসওয়ার্ড</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="পাসওয়ার্ড"></div>
+ </div>
+ <button type="button" id="cloudLogin">লগইন</button><button type="button" id="cloudSync" style="background:#087443" disabled>☁️ হিসাব Sync করুন</button><button type="button" id="cloudLogout" style="background:#596579">লগআউট</button>
+ <small>নিরাপত্তা: এখানে কখনো service_role / secret key দেবেন না। এই ধাপে শুধু সংযোগ ও লগইন যাচাই হবে; লগইনের পর “হিসাব Sync করুন” চাপলে সার্ভিস, পার্টস কেনা ও খরচের হিসাব ক্লাউডে পাঠানো ও আনা হবে।</small>
+</section>
+</details>
+<div class="card whatsapp-settings"><h3>WhatsApp গ্রুপ</h3><p class="hint">আপনার WhatsApp গ্রুপের Invite Link এখানে সেভ করুন। এরপর উপরের গোল WhatsApp আইকনে চাপ দিলেই গ্রুপ খুলবে।</p><div class="field"><label for="whatsappGroupLink">গ্রুপ Invite Link</label><input id="whatsappGroupLink" type="url" placeholder="https://chat.whatsapp.com/..."></div><button class="primary" id="saveWhatsappLink" type="button">গ্রুপ লিংক সেভ করুন</button><span class="hint" id="whatsappSaved"></span></div>
+<p class="hint">ড্যাশবোর্ডে সরাসরি নেই—এমন ব্যবস্থাপনা ও অতিরিক্ত কাজগুলো এখানে রাখা হয়েছে। যেকোনো অপশনে চাপ দিলে সংশ্লিষ্ট পাতাটি খুলবে।</p>
+<div class="settings-grid">
+<button class="settings-item" data-settings-shortcut="jobs"><span>🛠️</span><b>নতুন সার্ভিস এন্ট্রি</b><small>নতুন কাজ রেকর্ড করুন</small></button>
+<button class="settings-item" data-settings-shortcut="serviceLedger"><span>📒</span><b>সার্ভিস খাতা</b><small>সব সম্পন্ন ও চলমান সার্ভিসের তালিকা</small></button>
+<button class="settings-item" data-settings-shortcut="expenses"><span>🧾</span><b>খরচ এন্ট্রি</b><small>দোকানের দৈনিক খরচ যোগ করুন</small></button>
+<button class="settings-item" data-settings-shortcut="targets"><span>🎯</span><b>টার্গেট সেটআপ</b><small>দৈনিক ও মাসিক টার্গেট</small></button>
+<button class="settings-item" data-settings-shortcut="team"><span>🧰</span><b>টিম ম্যানেজমেন্ট</b><small>কর্মী, বেতন ও অগ্রিম</small></button>
+<button class="settings-item" data-settings-shortcut="report"><span>📊</span><b>রিপোর্ট ও ব্যাকআপ</b><small>দৈনিক/মাসিক রিপোর্ট, ডাটা ব্যাকআপ</small></button>
+<button class="settings-item" data-settings-shortcut="access"><span>🔐</span><b>অ্যাক্সেস নিয়ন্ত্রণ</b><small>কোন ফিচার চালু বা বন্ধ থাকবে</small></button>
+</div>
+</div>
+</section>
+<section id="access" class="section"><div class="card"><h2>অ্যাক্সেস নিয়ন্ত্রণ</h2><p class="hint">যে অংশ চালু করবেন, সেটি ব্যবহার করা যাবে। বন্ধ করলে ওই অংশে ঢোকা বন্ধ হবে। এটি একই ডিভাইসের লোকাল নিয়ন্ত্রণ; আলাদা কর্মী লগইন বা সার্ভার নিরাপত্তা নয়।</p><div id="accessControls"></div><button class="primary" id="saveAccess" type="button">অ্যাক্সেস সেভ করুন</button></div></section><section id="report" class="section">
+<div class="card"><h2>দৈনিক রিপোর্ট</h2>
+<p class="hint">প্রথমবার শুধু রিপোর্ট প্রস্তুতকারীর নাম লিখে সেভ করুন। এরপর প্রতিটি রিপোর্টে নামটি নিজে থেকেই বসবে।</p>
+<div class="row" style="margin-bottom:14px"><div class="field"><label>রিপোর্ট প্রস্তুতকারীর নাম</label><input id="reporterName" placeholder="আপনার নাম লিখুন"></div><button class="secondary" id="saveReporterName" type="button">নাম সেভ করুন</button><span id="reporterSaved" class="hint"></span></div>
+<div class="row"><div class="field"><label>রিপোর্টের তারিখ</label><input type="date" id="dailyReportDate"></div><button class="primary" id="showDailyReport" type="button">রিপোর্ট দেখুন</button><button class="secondary" id="downloadDailyReport" type="button">সুন্দর রিপোর্ট ডাউনলোড</button></div>
+<div id="dailyReportResult" style="margin-top:16px">তারিখ নির্বাচন করে রিপোর্ট দেখুন।</div>
+</div>
+<div class="card" style="margin-top:14px"><h2>মাসিক রিপোর্ট</h2><div class="row"><div class="field"><label>মাস নির্বাচন করুন</label><input type="month" id="reportMonth"></div><button class="primary" id="makeReport" type="button">রিপোর্ট দেখুন</button></div><div id="reportResult" class="hint" style="margin-top:14px">মাস নির্বাচন করে রিপোর্ট দেখুন।</div></div>
+<div class="card" style="margin-top:14px"><h2>টিম মেম্বারভিত্তিক পারফরম্যান্স</h2><p class="hint">নির্বাচিত মাসে কে কতটি সার্ভিস করেছে, কত আয় করেছে এবং পার্টস খরচ বাদে কত নেট সার্ভিস লাভ হয়েছে তা এখানে দেখাবে।</p><div id="staffReport" class="empty">রিপোর্ট দেখুন চাপুন।</div></div>
+<div class="card" style="margin-top:14px"><h2>ডাটা ব্যাকআপ</h2><p class="hint">এই অ্যাপের তথ্য এই ডিভাইসের ব্রাউজারে সেভ থাকে। নিয়মিত JSON ব্যাকআপ ডাউনলোড করে রাখুন। অন্য মোবাইল/কম্পিউটারে নিতে ব্যাকআপ ফাইল ইমপোর্ট করুন।</p><div class="actions"><button class="primary" id="export">ব্যাকআপ ডাউনলোড</button><label class="secondary" style="padding:11px 14px;border-radius:10px;cursor:pointer">ব্যাকআপ ইমপোর্ট <input type="file" id="importFile" accept=".json,application/json" hidden></label><button class="secondary" id="csv">সার্ভিস CSV</button></div></div>
+<div class="card" style="margin-top:14px"><h2>সতর্কতা</h2><p class="hint">ব্রাউজারের ডাটা/ক্যাশ মুছে ফেললে ব্যাকআপ না থাকলে হিসাব হারাতে পারেন। আপাতত ডাটা স্বয়ংক্রিয়ভাবে অনলাইনে সিঙ্ক হয় না; একই ডিভাইস ও ব্রাউজারে ব্যবহার করলে সবচেয়ে সহজ হবে।</p></div>
+</section>
+</main>
+<footer>BM Fixer • Version 3.7 Online Sync • Mobile Back Navigation • সুন্দর রিপোর্ট ও টিম মেম্বারের নাম</footer>
+<script>
+const $=id=>document.getElementById(id), today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+let data={jobs:[],expenses:[],targets:{},staff:[],advances:[],sales:[],purchases:[],access:{}};
+try{data=JSON.parse(localStorage.getItem('bmfixer_v1'))||data}catch(e){}
+if(!Array.isArray(data.jobs)) data.jobs=[];
+if(!Array.isArray(data.advances)) data.advances=[];if(!Array.isArray(data.sales))data.sales=[];if(!Array.isArray(data.purchases))data.purchases=[];if(!data.access||typeof data.access!=='object')data.access={};
+if(!Array.isArray(data.expenses)) data.expenses=[];
+if(!data.targets || typeof data.targets!=='object') data.targets={};
+if(!Array.isArray(data.staff) || !data.staff.length){
+  data.staff=[
+    {id:'staff-sharif',name:'শরীফ',role:'সার্ভিসিং',phone:'',salary:8900,active:true},
+    {id:'staff-arafat',name:'আরাফাত',role:'সার্ভিসিং',phone:'',salary:5900,active:true},
+    {id:'staff-imad',name:'ইমাদ',role:'প্রোডাক্ট সেলস',phone:'',salary:5900,active:true}
+  ];
+}
+function activeStaffNames(){return data.staff.filter(s=>s.active!==false).map(s=>s.name)}
+function refreshStaffOptions(){
+  const list=$('staffOptions');
+  if(list) list.innerHTML=data.staff.filter(s=>s.active!==false).map(s=>`<option value="${esc(s.name)}">`).join('');
+}
+const save=()=>localStorage.setItem('bmfixer_v1',JSON.stringify(data));
+const money=n=>'৳'+(Number(n)||0).toLocaleString('en-IN',{maximumFractionDigits:0});
+const sum=(arr,key)=>arr.reduce((s,x)=>s+(Number(x[key])||0),0);
+const monthOf=d=>String(d||'').slice(0,7);
+function setDefaults(){$('reporterName').value=localStorage.getItem('bmfixer_reporter_name')||'';$('reporterSaved').textContent=$('reporterName').value?'নাম সেভ করা আছে':'';$('jobDate').value=today();$('expenseDate').value=today();$('dashDate').value=today();$('jobMonth').value=monthOf(today());$('reportMonth').value=monthOf(today());$('dailyReportDate').value=today();$('targetMonth').value=monthOf(today());$('purchaseDate').value=today();$('purchaseLedgerMonth').value=monthOf(today())}
+function resetJob(){$('jobForm').reset();$('jobId').value='';$('jobDate').value=today();$('partCost').value=0;$('jobFormTitle').textContent='নতুন সার্ভিস এন্ট্রি'}
+function resetExpense(){$('expenseForm').reset();$('expenseId').value='';$('expenseDate').value=today()}
+
+const accessNames={jobs:'সার্ভিস এন্ট্রি',serviceLedger:'সার্ভিস খাতা',purchases:'পার্টস কেনা',purchaseLedger:'পার্টস কেনার খাতা',expenses:'খরচ',contactLists:'কাস্টমার ও সাপ্লায়ার লিস্ট',targets:'টার্গেট',team:'টিম ম্যানেজমেন্ট',report:'রিপোর্ট ও ব্যাকআপ'};
+const accessIcons={jobs:'🛠️',serviceLedger:'📒',purchases:'🔩',purchaseLedger:'📗',expenses:'🧾',contactLists:'👥',targets:'🎯',team:'🧰',report:'📈'};
+function hasAccess(t){return data.access[t]!==false}
+function renderAccessControls(){const h=$('accessControls');if(h)h.innerHTML=Object.entries(accessNames).map(([k,v])=>`<label style="display:flex;align-items:center;gap:10px;padding:9px;border-bottom:1px solid var(--line, #eee)"><input type="checkbox" data-access="${k}" ${hasAccess(k)?'checked':''} style="width:auto"><span aria-hidden="true" style="font-size:16px;width:22px;text-align:center">${accessIcons[k]}</span><span>${v} চালু</span></label>`).join('')}
+function renderDashboardGates(){document.querySelectorAll('[data-shortcut]').forEach(b=>{const t=b.dataset.shortcut,locked=t!=='access'&&!hasAccess(t);b.classList.toggle('locked',locked);const g=b.querySelector('.gate');if(g)g.textContent=locked?'🔒 বন্ধ':'● চালু';b.setAttribute('aria-label',(accessNames[t]||'অ্যাক্সেস সেটিংস')+(locked?' — বন্ধ':' — চালু'))})}
+document.querySelectorAll('[data-shortcut]').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.shortcut;if(t!=='access'&&!hasAccess(t)){alert('এই ফিচারটি বর্তমানে বন্ধ আছে। অ্যাক্সেস সেটিংসে অনুমতি চালু করুন।');return}if(t==='access'){renderAccessControls()}activateTab(t)}));
+const waInput=$('whatsappGroupLink');if(waInput)waInput.value=localStorage.getItem('bmfixer_whatsapp_group')||'';
+$('saveWhatsappLink').onclick=()=>{const v=$('whatsappGroupLink').value.trim();if(v&&!/^https:\/\/(chat\.whatsapp\.com\/|wa\.me\/)/i.test(v)){alert('সঠিক WhatsApp গ্রুপ Invite Link দিন।');return}localStorage.setItem('bmfixer_whatsapp_group',v);$('whatsappSaved').textContent=v?'গ্রুপ লিংক সেভ হয়েছে।':'লিংক খালি রাখা হয়েছে।'};
+const supportBtn=$('supportCallBtn');if(supportBtn)supportBtn.onclick=()=>{window.location.href='tel:+8801636264488'};
+$('whatsappBtn').onclick=()=>{const v=localStorage.getItem('bmfixer_whatsapp_group')||'';if(!v){alert('আগে সেটিংসে গিয়ে WhatsApp গ্রুপ Invite Link সেভ করুন।');activateTab('settings');return}window.open(v,'_blank','noopener,noreferrer')};
+document.querySelectorAll('[data-settings-shortcut]').forEach(b=>b.addEventListener('click',()=>{const t=b.dataset.settingsShortcut;if(t!=='access'&&!hasAccess(t)){alert('এই ফিচারটি বর্তমানে বন্ধ আছে। অ্যাক্সেস সেটিংসে অনুমতি চালু করুন।');return}if(t==='access')renderAccessControls();activateTab(t);window.scrollTo(0,0)}));
+$('saveAccess').onclick=()=>{document.querySelectorAll('[data-access]').forEach(x=>data.access[x.dataset.access]=x.checked);save();renderDashboardGates();alert('অ্যাক্সেস সেটিংস সেভ হয়েছে।')};
+// মোবাইলের Back বাটন: আগের স্ক্রিনে ফিরবে; একাধিক অপশন খুললে ধাপে ধাপে আগেরটিতে যাবে।
+function showTab(tabName){
+ const target=document.getElementById(tabName);
+ if(!target || !target.classList.contains('section')) tabName='dashboard';
+ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===tabName));
+ document.querySelectorAll('.section').forEach(x=>x.classList.toggle('active',x.id===tabName));
+}
+function activateTab(tabName, pushHistory=true){
+ const target=document.getElementById(tabName);
+ if(!target || !target.classList.contains('section')) tabName='dashboard';
+ const current=document.querySelector('.section.active')?.id || 'dashboard';
+ if(current===tabName){showTab(tabName);return;}
+ showTab(tabName);
+ if(pushHistory){
+  try{history.pushState({bmFixerTab:tabName},'',location.href.split('#')[0]);}catch(e){}
+ }
+}
+try{history.replaceState({bmFixerTab:document.querySelector('.section.active')?.id||'dashboard'},'',location.href); }catch(e){}
+window.addEventListener('popstate',e=>{
+ const previous=e.state && e.state.bmFixerTab ? e.state.bmFixerTab : 'dashboard';
+ showTab(previous);
+});
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{const t=b.dataset.tab;if(t!=='dashboard'&&t!=='access'&&!hasAccess(t)){alert('এই অংশে অ্যাক্সেস দেওয়া হয়নি।');return}activateTab(t==='settings'&&document.getElementById('settings').classList.contains('active')?'dashboard':t)});
+$('jobForm').onsubmit=e=>{e.preventDefault();if(!hasAccess('jobs')){alert('সার্ভিস এন্ট্রিতে অ্যাক্সেস নেই।');return}let id=$('jobId').value;let item={id:id||String(Date.now()),date:$('jobDate').value,customer:$('customer').value.trim(),phone:$('phone').value.trim(),model:$('model').value.trim(),work:$('work').value.trim(),staff:$('staff').value.trim(),amount:+$('amount').value,partCost:+$('partCost').value,status:$('status').value};if(id)data.jobs=data.jobs.map(x=>x.id===id?item:x);else data.jobs.push(item);save();resetJob();render();alert('সার্ভিস এন্ট্রি সেভ হয়েছে।')};
+$('expenseForm').onsubmit=e=>{e.preventDefault();if(!hasAccess('expenses')){alert('খরচে অ্যাক্সেস নেই।');return}let id=$('expenseId').value;let item={id:id||String(Date.now()),date:$('expenseDate').value,type:$('expenseType').value,amount:+$('expenseAmount').value,note:$('expenseNote').value.trim()};if(id)data.expenses=data.expenses.map(x=>x.id===id?item:x);else data.expenses.push(item);save();resetExpense();render();alert('খরচ সেভ হয়েছে।')};
+$('resetJob').onclick=resetJob;$('resetExpense').onclick=resetExpense;
+function editJob(id){let x=data.jobs.find(x=>x.id===id);if(!x)return;['jobId','jobDate','customer','phone','model','work','staff','amount','partCost','status'].forEach((k,i)=>$(k).value=[x.id,x.date,x.customer,x.phone,x.model,x.work,x.staff,x.amount,x.partCost,x.status][i]);$('jobFormTitle').textContent='সার্ভিস এন্ট্রি সম্পাদনা';document.querySelector('[data-tab="jobs"]').click();window.scrollTo(0,0)}
+function delJob(id){if(confirm('এই সার্ভিস এন্ট্রি মুছে ফেলবেন?')){data.jobs=data.jobs.filter(x=>x.id!==id);save();render()}}
+function editExpense(id){if(!hasAccess('expenses')){alert('খরচে অ্যাক্সেস নেই।');return}let x=data.expenses.find(x=>x.id===id);if(!x)return;$('expenseId').value=x.id;$('expenseDate').value=x.date;$('expenseType').value=x.type;$('expenseAmount').value=x.amount;$('expenseNote').value=x.note;window.scrollTo(0,0)}
+function delExpense(id){if(!hasAccess('expenses')){alert('খরচে অ্যাক্সেস নেই।');return}if(confirm('এই খরচ মুছে ফেলবেন?')){data.expenses=data.expenses.filter(x=>x.id!==id);save();render()}}
+function renderJobs(){let q=$('jobSearch').value.toLowerCase(),m=$('jobMonth').value;let rows=data.jobs.filter(x=>(!m||monthOf(x.date)===m)&&[x.customer,x.phone,x.model,x.work].join(' ').toLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));$('jobRows').innerHTML=rows.length?rows.map(x=>`<tr><td>${x.date}</td><td><b>${esc(x.customer)}</b><br>${esc(x.phone)}</td><td>${esc(x.model)}<br>${esc(x.work)}<br><small>${esc(x.staff)}</small></td><td>${money(x.amount)}</td><td>${money(x.partCost)}</td><td><b>${money(x.amount-x.partCost)}</b></td><td><span class="badge">${esc(x.status)}</span></td><td><button class="secondary" onclick="editJob('${x.id}')">এডিট</button> <button class="danger" onclick="delJob('${x.id}')">মুছুন</button></td></tr>`).join(''):'<tr><td colspan="8" class="empty">কোনো এন্ট্রি পাওয়া যায়নি।</td></tr>'}
+function renderExpenses(){$('expenseRows').innerHTML=data.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(x=>`<tr><td>${x.date}</td><td>${esc(x.type)}</td><td>${esc(x.note)}</td><td>${money(x.amount)}</td><td><button class="secondary" onclick="editExpense('${x.id}')">এডিট</button> <button class="danger" onclick="delExpense('${x.id}')">মুছুন</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">এখনো কোনো খরচ নেই।</td></tr>'}
+
+function daysInMonth(m){let [y,mo]=m.split('-').map(Number);return new Date(y,mo,0).getDate()}
+function dateDay(d){return Number(String(d).slice(8,10))}
+function netJobProfit(jobs){return jobs.reduce((s,x)=>s+(Number(x.amount)||0)-(Number(x.partCost)||0),0)}
+function monthTarget(m){return Number(data.targets[m]?.monthlyTarget)||0}
+function targetForDate(m,day){
+ let total=monthTarget(m), days=daysInMonth(m);
+ let before=data.jobs.filter(x=>monthOf(x.date)===m && dateDay(x.date)<day);
+ let achieved=netJobProfit(before);
+ return Math.max(0,(total-achieved)/Math.max(1,days-day+1));
+}
+function actualForDate(m,day){
+ return netJobProfit(data.jobs.filter(x=>monthOf(x.date)===m && dateDay(x.date)===day));
+}
+function staffActualForDate(m,day,name){
+ return netJobProfit(data.jobs.filter(x=>monthOf(x.date)===m && dateDay(x.date)===day && (x.staff||'').trim()===name));
+}
+function renderTargets(){
+ let m=$('targetMonth').value || monthOf(today()), day=(m===monthOf(today())?dateDay(today()):1);
+ let total=monthTarget(m), days=daysInMonth(m);
+ $('monthlyTarget').value=total||'';
+ let actual=netJobProfit(data.jobs.filter(x=>monthOf(x.date)===m));
+ let left=Math.max(0,total-actual);
+ let daily=targetForDate(m,day);
+ $('planMonthly').textContent=money(total);$('planActual').textContent=money(actual);
+ $('planLeft').textContent=money(left);$('planDaily').textContent=money(daily);
+ let rows=activeStaffNames().map(name=>{
+   let staffProfit=netJobProfit(data.jobs.filter(x=>monthOf(x.date)===m && (x.staff||'').trim()===name));
+   let staffDaily=daily/Math.max(1,activeStaffNames().length);
+   return `<tr><td><b>${name}</b></td><td>${money(staffDaily)}</td><td>${money(staffProfit)}</td><td>${money(Math.max(0,total/Math.max(1,activeStaffNames().length)-staffProfit))}</td></tr>`;
+ }).join('');
+ $('staffTargetRows').innerHTML=`<table><thead><tr><th>টিম মেম্বার</th><th>আজকের ব্যক্তিগত টার্গেট</th><th>মাসে নেট প্রফিট</th><th>ব্যক্তিগত মাসিক বাকি</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function renderTargetDashboard(){
+ let d=$('dashDate').value || today(),m=monthOf(d),day=dateDay(d),total=monthTarget(m);
+ let daily=targetForDate(m,day),actual=actualForDate(m,day);
+ let left=Math.max(0,total-netJobProfit(data.jobs.filter(x=>monthOf(x.date)===m && dateDay(x.date)<=day)));
+ let tomorrow=day<daysInMonth(m)?Math.max(0,(total-netJobProfit(data.jobs.filter(x=>monthOf(x.date)===m && dateDay(x.date)<=day)))/(daysInMonth(m)-day)):0;
+ $('todayTarget').textContent=money(daily);$('todayProfit').textContent=money(actual);
+ $('tomorrowTarget').textContent=money(tomorrow);$('targetRemaining').textContent=money(left);
+ $('targetHint').textContent=total?`আজকের ব্যক্তিগত টার্গেট (প্রতি কর্মী): ${money(daily/Math.max(1,activeStaffNames().length))} • আগামীকালের ব্যক্তিগত টার্গেট: ${money(tomorrow/Math.max(1,activeStaffNames().length))} • সক্রিয় কর্মীদের মধ্যে সমান ভাগে হিসাব।`:'টার্গেট পাতায় এই মাসের মাসিক টিম টার্গেট সেট করুন।';
+}
+
+function purchaseSpendForDate(date){return data.purchases.filter(x=>x.date===date).reduce((n,x)=>n+(Number(x.total)||((Number(x.qty)||0)*(Number(x.price)||0))),0)}
+function purchaseSpendForMonth(month){return data.purchases.filter(x=>monthOf(x.date)===month).reduce((n,x)=>n+(Number(x.total)||((Number(x.qty)||0)*(Number(x.price)||0))),0)}
+function renderDash(){let d=$('dashDate').value,m=monthOf(d),dj=data.jobs.filter(x=>x.date===d),de=data.expenses.filter(x=>x.date===d&&x.type!=='পার্টস/মালামাল কেনা'),mj=data.jobs.filter(x=>monthOf(x.date)===m),me=data.expenses.filter(x=>monthOf(x.date)===m&&x.type!=='পার্টস/মালামাল কেনা');let inc=sum(dj,'amount'),exp=sum(de,'amount')+purchaseSpendForDate(d),mi=sum(mj,'amount'),mx=sum(me,'amount')+purchaseSpendForMonth(m);$('dIncome').textContent=money(inc);$('dJobs').textContent=dj.length;$('dExpense').textContent=money(exp);$('dNet').textContent=money(inc-exp);$('mIncome').textContent=money(mi);$('mJobs').textContent=mj.length;$('mExpense').textContent=money(mx);$('mNet').textContent=money(mi-mx);renderTargetDashboard()}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function addTradeEntry(kind,e){e.preventDefault();if(kind!=='purchase')return;if(!hasAccess('purchases')){alert('এই অংশে অ্যাক্সেস নেই।');return}const p='purchase',arr=data.purchases,q=Number($(p+'Qty').value),v=Number($(p+'Price').value);if(!(q>0)||!(v>=0)){alert('পরিমাণ ও দাম সঠিকভাবে দিন।');return}arr.push({id:p+'-'+Date.now(),date:$(p+'Date').value,item:$(p+'Item').value.trim(),party:$(p+'Party').value.trim(),partyPhone:$(p+'PartyPhone')?.value.trim()||'',qty:q,price:v,total:q*v,note:$(p+'Note').value.trim()});save();$(p+'Form').reset();$(p+'Date').value=today();renderTradeLedgers();alert('কেনা সেভ হয়েছে।')}
+$('purchaseForm').onsubmit=e=>addTradeEntry('purchase',e);
+function deleteTrade(kind,id){if(kind!=='purchase')return;if(!confirm('এই কেনার এন্ট্রি মুছে ফেলবেন?'))return;data.purchases=data.purchases.filter(x=>x.id!==id);save();renderTradeLedgers()}
+function renderTradeLedgers(){let m=$('purchaseLedgerMonth')?.value||'',a=data.purchases.filter(x=>!m||monthOf(x.date)===m).sort((x,y)=>y.date.localeCompare(x.date));$('purchaseLedgerSummary').textContent=`মোট এন্ট্রি: ${a.length} টি • মোট পার্টস কেনা: ${money(a.reduce((n,x)=>n+(+x.total||0),0))}`;$('purchaseRows').innerHTML=a.length?a.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.item)}</td><td>${esc(x.party||'—')}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(x.total)}</td><td>${esc(x.note||'—')}</td><td><button class="danger" onclick="deleteTrade('purchase','${x.id}')">মুছুন</button></td></tr>`).join(''):'<tr><td colspan="8" class="empty">এখনো কোনো এন্ট্রি নেই।</td></tr>'}
+$('purchaseLedgerMonth').onchange=renderTradeLedgers;
+function renderContactLists(){
+ const customerQuery=($('customerListSearch')?.value||'').trim().toLowerCase();
+ const supplierQuery=($('supplierListSearch')?.value||'').trim().toLowerCase();
+ const customers=new Map();
+ data.jobs.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).forEach(j=>{
+  const name=String(j.customer||'').trim();if(!name)return;
+  const phone=String(j.phone||'').replace(/\D/g,'');const key=phone?'phone:'+phone:'name:'+name.toLowerCase();
+  if(!customers.has(key))customers.set(key,{name,phone:String(j.phone||''),model:String(j.model||''),date:String(j.date||''),jobs:0});
+  customers.get(key).jobs++;
+ });
+ const customerRows=[...customers.values()].filter(c=>[c.name,c.phone,c.model].join(' ').toLowerCase().includes(customerQuery));
+ $('customerCount').textContent=customers.size.toLocaleString('bn-BD')+' জন';
+ $('customerListRows').innerHTML=customerRows.length?customerRows.map(c=>`<div class="contact-row"><div><div class="contact-name">${esc(c.name)}</div><div class="contact-meta">${esc(c.phone||'ফোন দেওয়া হয়নি')} · ${esc(c.model||'মডেল নেই')}</div></div><span class="badge">${c.jobs.toLocaleString('bn-BD')} সার্ভিস</span></div>`).join(''):'<div class="contact-empty">কোনো কাস্টমার পাওয়া যায়নি। সার্ভিস এন্ট্রি করলে এখানে দেখা যাবে।</div>';
+ const suppliers=new Map();
+ data.purchases.forEach(p=>{const name=String(p.party||'').trim();if(!name)return;const key=name.toLowerCase();if(!suppliers.has(key))suppliers.set(key,{name,phone:'',count:0,total:0,lastDate:''});const v=suppliers.get(key);if(p.partyPhone&&!v.phone)v.phone=String(p.partyPhone);v.count++;v.total+=Number(p.total)||((Number(p.qty)||0)*(Number(p.price)||0));if(String(p.date||'')>v.lastDate){v.lastDate=String(p.date||'');if(p.partyPhone)v.phone=String(p.partyPhone)}});
+ const supplierRows=[...suppliers.values()].filter(v=>(v.name+' '+v.phone).toLowerCase().includes(supplierQuery)).sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+ $('supplierNameOptions').innerHTML=[...suppliers.values()].map(v=>`<option value="${esc(v.name)}">`).join('');
+ $('supplierCount').textContent=suppliers.size.toLocaleString('bn-BD')+' জন';
+ $('supplierListRows').innerHTML=supplierRows.length?supplierRows.map(v=>`<div class="contact-row"><div><div class="contact-name">${esc(v.name)}</div><div class="contact-meta">${esc(v.phone||'ফোন দেওয়া হয়নি')} · শেষ কেনা: ${esc(v.lastDate||'—')} · ${v.count.toLocaleString('bn-BD')} বার</div></div><b style="font-size:12px;white-space:nowrap">${money(v.total)}</b></div>`).join(''):'<div class="contact-empty">কোনো সাপ্লায়ার পাওয়া যায়নি। পার্টস কেনার সময় সাপ্লায়ারের নাম লিখলে এখানে দেখা যাবে।</div>';
+}
+$('customerListSearch').oninput=renderContactLists;$('supplierListSearch').oninput=renderContactLists;
+$('purchaseParty').addEventListener('change',()=>{const n=$('purchaseParty').value.trim().toLowerCase();const old=data.purchases.slice().reverse().find(x=>String(x.party||'').trim().toLowerCase()===n&&x.partyPhone);if(old&&!$('purchasePartyPhone').value.trim())$('purchasePartyPhone').value=old.partyPhone;});
+function switchContactPanel(which){const customer=which==='customers';$('customerPanel').hidden=!customer;$('supplierPanel').hidden=customer;$('showCustomers').classList.toggle('active',customer);$('showSuppliers').classList.toggle('active',!customer);$('showCustomers').setAttribute('aria-selected',String(customer));$('showSuppliers').setAttribute('aria-selected',String(!customer));}
+$('showCustomers').onclick=()=>switchContactPanel('customers');$('showSuppliers').onclick=()=>switchContactPanel('suppliers');
+function render(){refreshStaffOptions();renderDash();renderJobs();renderExpenses();renderTargets();renderStaff();renderPayroll();renderTradeLedgers();renderAccessControls();renderContactLists()}
+$('dashDate').onchange=renderDash;$('jobSearch').oninput=renderJobs;$('jobMonth').onchange=renderJobs;
+
+function dailyReportData(date){
+ let jobs=data.jobs.filter(x=>x.date===date).sort((a,b)=>(a.staff||'').localeCompare(b.staff||''));
+ let expenses=data.expenses.filter(x=>x.date===date).sort((a,b)=>(a.type||'').localeCompare(b.type||''));
+ let income=sum(jobs,'amount'), usedParts=sum(jobs,'partCost');
+ let purchaseExpenses=expenses.filter(x=>x.type==='পার্টস/মালামাল কেনা');
+ let purchaseEntries=data.purchases.filter(x=>x.date===date);
+ let purchases=[...purchaseEntries,...purchaseExpenses];
+ let other=expenses.filter(x=>x.type!=='পার্টস/মালামাল কেনা');
+ let purchaseTotal=purchaseEntries.reduce((n,x)=>n+(Number(x.total)||((Number(x.qty)||0)*(Number(x.price)||0))),0)+sum(purchaseExpenses,'amount'), otherTotal=sum(other,'amount');
+ return {jobs,expenses,income,usedParts,purchases,other,purchaseTotal,otherTotal,serviceNet:income-usedParts,cashAfterExpenses:income-purchaseTotal-otherTotal};
+}
+function reportEscape(value){
+ return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function renderDailyReport(){
+ let date=$('dailyReportDate').value;
+ if(!date){$('dailyReportResult').textContent='রিপোর্টের তারিখ নির্বাচন করুন।';return}
+ let r=dailyReportData(date), name=localStorage.getItem('bmfixer_reporter_name')||'নাম দেওয়া হয়নি';
+ $('dailyReportResult').innerHTML=`<div class="daily-preview">
+ <div class="daily-preview-head"><div><div class="daily-preview-title">BM FIXER</div><div class="daily-preview-meta">দৈনিক আয়-ব্যয়ের রিপোর্ট</div></div><div class="daily-preview-meta" style="text-align:right">তারিখ: <b>${reportEscape(date)}</b><br>প্রস্তুতকারী: <b>${reportEscape(name)}</b></div></div>
+ <div class="daily-metrics">
+ <div class="daily-metric"><div class="klabel">মোট সার্ভিসিং কাজ</div><div class="kvalue">${r.jobs.length} টি</div></div>
+ <div class="daily-metric"><div class="klabel">সার্ভিসিং আয়</div><div class="kvalue green">${money(r.income)}</div></div>
+ <div class="daily-metric"><div class="klabel">ব্যবহৃত পার্টস খরচ</div><div class="kvalue red">${money(r.usedParts)}</div></div>
+ <div class="daily-metric"><div class="klabel">পার্টস/মালামাল কেনা</div><div class="kvalue red">${money(r.purchaseTotal)}</div></div>
+ <div class="daily-metric" style="grid-column:1/-1"><div class="klabel">অন্যান্য খরচ</div><div class="kvalue red">${money(r.otherTotal)}</div></div>
+ </div><div class="daily-cash"><div class="klabel">খরচ বাদে নগদ হিসাব</div><div class="kvalue">${money(r.cashAfterExpenses)}</div></div>
+ </div>`;
+}
+function downloadDailyReport(){
+ let date=$('dailyReportDate').value;
+ if(!date){alert('রিপোর্টের তারিখ নির্বাচন করুন।');return}
+ let name=(localStorage.getItem('bmfixer_reporter_name')||'').trim();
+ if(!name){alert('প্রথমে রিপোর্ট প্রস্তুতকারীর নাম লিখে সেভ করুন।');$('reporterName').focus();return}
+ let r=dailyReportData(date);
+ const fmt=n=>money(n);
+ let reportHtml=`<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BM Fixer Daily Report ${reportEscape(date)}</title>
+ <style>
+ *{box-sizing:border-box}body{margin:0;padding:24px;background:#eef3ef;color:#182820;font-family:system-ui,-apple-system,"Noto Sans Bengali",sans-serif}
+ .sheet{max-width:720px;margin:0 auto;background:#fff;border:1px solid #dce7df;border-radius:20px;padding:30px;box-shadow:0 8px 28px #183a2512}
+ .head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:3px solid #146c4a;padding-bottom:18px;margin-bottom:22px}
+ .brand{font-size:30px;font-weight:900;letter-spacing:1px;color:#146c4a}.subtitle{font-size:17px;color:#52645a;margin-top:3px}
+ .meta{font-size:15px;line-height:1.9;text-align:right;color:#52645a}.meta b{color:#17231e}
+ .grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+ .metric{padding:18px;border:1px solid #e0e9e3;border-radius:14px;background:#fbfdfb}
+ .label{font-size:16px;color:#64736b}.value{font-size:29px;font-weight:850;margin-top:7px}
+ .green{color:#146c4a}.red{color:#b83b3b}
+ .cash{margin-top:16px;padding:20px;border-radius:15px;background:#eaf5ee;border:1px solid #cfe4d6}
+ .cash .label{color:#285c43}.cash .value{font-size:35px;color:#146c4a}
+ .foot{margin-top:22px;padding-top:12px;border-top:1px solid #e4ebe6;text-align:center;color:#718078;font-size:13px}
+ @media(max-width:520px){body{padding:10px}.sheet{padding:18px;border-radius:14px}.brand{font-size:24px}.subtitle{font-size:14px}.meta{font-size:13px}.metric{padding:13px}.label{font-size:14px}.value{font-size:23px}.cash .value{font-size:29px}}
+ @media print{body{padding:0;background:#fff}.sheet{box-shadow:none;border:0;max-width:none;padding:10mm}}
+ 
+/* BM Fixer v2.0 visual refresh */
+:root{--bg:#f5f7f6;--card:#fff;--ink:#17251e;--muted:#718078;--green:#16734f;--line:#e6ece8}
+body{background:radial-gradient(circle at 8% 0%,#e8f5ed 0,transparent 32%),var(--bg);font-family:system-ui,-apple-system,"Noto Sans Bengali",sans-serif}
+header{background:linear-gradient(115deg,#10251f,#174d38 68%,#1b6948);box-shadow:0 8px 24px #10251f18;position:relative;overflow:hidden}
+header:after{content:"";position:absolute;width:220px;height:220px;border:1px solid #ffffff18;border-radius:50%;right:7%;top:-145px;box-shadow:0 0 0 28px #ffffff08,0 0 0 58px #ffffff05;pointer-events:none}
+.brand{letter-spacing:1.2px}.sub{letter-spacing:.1px}
+main{animation:pageIn .42s ease both}
+.card{border-radius:18px;box-shadow:0 5px 20px #163c2610;transition:transform .2s ease,box-shadow .2s ease}
+.card:hover{box-shadow:0 9px 25px #163c2617}
+.tab{border-radius:999px;padding:10px 16px;transition:background .2s ease,color .2s ease,transform .2s ease}
+.tab:hover{transform:translateY(-1px)}.tab.active{box-shadow:0 5px 14px #146c4a28}
+button{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}
+button:active{transform:scale(.97)}
+button.primary{background:linear-gradient(135deg,#16734f,#20865d);box-shadow:0 4px 12px #16734f24}
+input,select,textarea{transition:border-color .18s ease,box-shadow .18s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#279366;box-shadow:0 0 0 3px #27936618}
+.grid .card,.kvalue{animation:riseIn .42s ease both}
+.section.active{animation:sectionIn .28s ease both}
+.badge{font-weight:700}
+.tablewrap{border-radius:14px}
+th{position:sticky;top:0}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sectionIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes riseIn{from{opacity:.45;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+
+/* Professional BM Fixer logo header */
+.brand-block{display:flex;flex-direction:row;align-items:center;gap:12px;min-width:0}
+.brand-logo{width:66px;height:66px;flex:0 0 66px;object-fit:contain;border-radius:50%;background:#fff;box-shadow:0 3px 12px #0002;border:2px solid #ffffffa8}
+.brand-copy{display:flex;flex-direction:column;gap:3px;min-width:0;align-items:flex-start}
+.brand-copy .brand{font-size:20px;line-height:1.15;letter-spacing:1.1px}
+.brand-copy .sub{font-size:10px;color:#d2e7db;letter-spacing:.25px}
+.brand-copy .header-date{justify-content:flex-start;margin-top:2px}
+@media(max-width:420px){.brand-logo{width:54px;height:54px;flex-basis:54px}.brand-copy .brand{font-size:17px}.brand-copy .sub{font-size:9px}.brand-block{gap:9px}}
+</style></head><body><main class="sheet">
+ <div class="head"><div><div class="brand">BM FIXER</div><div class="subtitle">দৈনিক আয়-ব্যয়ের রিপোর্ট</div></div><div class="meta">তারিখ: <b>${reportEscape(date)}</b><br>প্রস্তুতকারী: <b>${reportEscape(name)}</b></div></div>
+ <div class="grid">
+ <div class="metric"><div class="label">মোট সার্ভিসিং কাজ</div><div class="value">${r.jobs.length} টি</div></div>
+ <div class="metric"><div class="label">সার্ভিসিং আয়</div><div class="value green">${fmt(r.income)}</div></div>
+ <div class="metric"><div class="label">ব্যবহৃত পার্টস খরচ</div><div class="value red">${fmt(r.usedParts)}</div></div>
+ <div class="metric"><div class="label">পার্টস/মালামাল কেনা</div><div class="value red">${fmt(r.purchaseTotal)}</div></div>
+ <div class="metric" style="grid-column:1/-1"><div class="label">অন্যান্য খরচ</div><div class="value red">${fmt(r.otherTotal)}</div></div>
+ </div><div class="cash"><div class="label">খরচ বাদে নগদ হিসাব</div><div class="value">${fmt(r.cashAfterExpenses)}</div></div>
+ <div class="foot">BM FIXER • দৈনিক হিসাব রিপোর্ট</div></main>
+<script>
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.warn('PWA offline cache:', err)));
+}
+</script>
+</body></html>`;
+ let blob=new Blob([reportHtml],{type:'text/html;charset=utf-8'});
+ let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='BM-Fixer-Daily-Report-'+date+'.html';a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
+$('saveReporterName').onclick=()=>{
+ let name=$('reporterName').value.trim();
+ if(!name){alert('আপনার নাম লিখুন।');$('reporterName').focus();return}
+ localStorage.setItem('bmfixer_reporter_name',name);
+ $('reporterSaved').textContent='নাম সেভ হয়েছে — পরের রিপোর্টে নিজে থেকেই আসবে।';
+ renderDailyReport();
+};
+$('showDailyReport').onclick=renderDailyReport;
+$('downloadDailyReport').onclick=downloadDailyReport;
+
+$('makeReport').onclick=()=>{let m=$('reportMonth').value,j=data.jobs.filter(x=>monthOf(x.date)===m),e=data.expenses.filter(x=>monthOf(x.date)===m&&x.type!=='পার্টস/মালামাল কেনা'),income=sum(j,'amount'),parts=purchaseSpendForMonth(m),usedParts=sum(j,'partCost'),cost=sum(e,'amount');$('reportResult').innerHTML=`<div class="grid"><div><div class="klabel">কাজের সংখ্যা</div><div class="kvalue">${j.length}</div></div><div><div class="klabel">সার্ভিস আয়</div><div class="kvalue green">${money(income)}</div></div><div><div class="klabel">পার্টস কেনা</div><div class="kvalue red">${money(parts)}</div></div><div><div class="klabel">অন্যান্য খরচ</div><div class="kvalue red">${money(cost)}</div></div><div><div class="klabel">সার্ভিসে ব্যবহৃত পার্টস (তথ্য)</div><div class="kvalue">${money(usedParts)}</div></div></div><h2>আনুমানিক নেট: ${money(income-parts-cost)}</h2><p class="hint">নেট = সার্ভিস আয় − পার্টস কেনা − অন্যান্য খরচ। ব্যবহৃত পার্টসের খরচ আলাদা তথ্য হিসেবে দেখানো হয়েছে, যাতে কেনার হিসাবের সঙ্গে দ্বিগুণ বাদ না যায়।`;
+let groups={};j.forEach(x=>{let n=(x.staff||'').trim()||'নাম দেওয়া হয়নি';if(!groups[n])groups[n]={jobs:0,income:0,parts:0};groups[n].jobs++;groups[n].income+=Number(x.amount)||0;groups[n].parts+=Number(x.partCost)||0});let entries=Object.entries(groups).sort((a,b)=>b[1].income-a[1].income);$('staffReport').innerHTML=entries.length?`<div class="tablewrap"><table><thead><tr><th>টিম মেম্বার</th><th>কাজ</th><th>সার্ভিস আয়</th><th>পার্টস খরচ</th><th>নেট সার্ভিস লাভ</th></tr></thead><tbody>${entries.map(([n,v])=>`<tr><td><b>${esc(n)}</b></td><td>${v.jobs}</td><td>${money(v.income)}</td><td>${money(v.parts)}</td><td><b>${money(v.income-v.parts)}</b></td></tr>`).join('')}</tbody></table></div>`:'এই মাসে টিম মেম্বারর নামে কোনো সার্ভিস এন্ট্রি নেই।'};
+
+$('targetMonth').onchange=renderTargets;
+$('saveTarget').onclick=()=>{
+ let m=$('targetMonth').value,amount=Number($('monthlyTarget').value);
+ if(!m){alert('মাস নির্বাচন করুন।');return}
+ if(!Number.isFinite(amount)||amount<0){alert('সঠিক মাসিক টার্গেট লিখুন।');return}
+ data.targets[m]={monthlyTarget:amount,staff:activeStaffNames()};
+ save();render();$('targetSaveNote').textContent=`${m} মাসের ${money(amount)} টিম টার্গেট সেভ হয়েছে। প্রতিদিনের টার্গেট স্বয়ংক্রিয়ভাবে পুনর্গণনা হবে।`;
+ alert('মাসিক টার্গেট সেভ হয়েছে।');
+};
+$('export').onclick=()=>{if(!hasAccess('report')){alert('রিপোর্টে অ্যাক্সেস নেই।');return}let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bm-fixer-backup-'+today()+'.json';a.click();URL.revokeObjectURL(a.href)};
+$('importFile').onchange=e=>{if(!hasAccess('report')){alert('রিপোর্টে অ্যাক্সেস নেই।');e.target.value='';return}let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!Array.isArray(x.jobs)||!Array.isArray(x.expenses))throw Error();if(!x.targets||typeof x.targets!=='object')x.targets={};if(!Array.isArray(x.staff))x.staff=data.staff;if(!Array.isArray(x.advances))x.advances=[];if(!Array.isArray(x.sales))x.sales=[];if(!Array.isArray(x.purchases))x.purchases=[];if(!x.access)x.access={};if(confirm('বর্তমান ডাটার জায়গায় ব্যাকআপের ডাটা বসাবেন?')){data=x;save();render();alert('ব্যাকআপ ইমপোর্ট হয়েছে।')}}catch(err){alert('ফাইলটি সঠিক BM Fixer ব্যাকআপ নয়।')}};r.readAsText(f);e.target.value=''};
+$('csv').onclick=()=>{if(!hasAccess('report')){alert('রিপোর্টে অ্যাক্সেস নেই।');return}let lines=[['Date','Customer','Phone','Model','Work','Technician','Income','Parts Cost','Net','Status'],...data.jobs.map(x=>[x.date,x.customer,x.phone,x.model,x.work,x.staff,x.amount,x.partCost,x.amount-x.partCost,x.status])];let csv='\ufeff'+lines.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='bm-fixer-services.csv';a.click();URL.revokeObjectURL(a.href)};
+
+function renderStaff(){
+ const host=$('staffList'); if(!host)return;
+ const list=data.staff||[];
+ host.innerHTML=list.length?`<table><thead><tr><th>কর্মী</th><th>দায়িত্ব</th><th>মোবাইল</th><th>মাসিক বেতন</th><th>অবস্থা</th><th>অ্যাকশন</th></tr></thead><tbody>${
+ list.map(s=>`<tr><td><b>${esc(s.name)}</b></td><td>${esc(s.role||'')}</td><td>${esc(s.phone||'—')}</td><td><div style="display:flex;gap:5px;min-width:145px"><input id="salary-${s.id}" type="number" min="0" step="1" value="${Number(s.salary)||0}" style="width:95px;padding:7px"><button class="secondary" onclick="saveSalary('${s.id}')">সেভ</button></div></td><td>${s.active===false?'<span class="badge" style="background:#fff0f0;color:#a33">নিষ্ক্রিয়</span>':'<span class="badge">সক্রিয়</span>'}</td><td>${s.active===false?`<button class="secondary" onclick="toggleStaff('${s.id}')">আবার চালু</button>`:`<button class="danger" onclick="toggleStaff('${s.id}')">নিষ্ক্রিয়</button>`}</td></tr>`).join('')
+ }</tbody></table>`:'<div class="empty">এখনো কর্মী যোগ করা হয়নি।</div>';
+}
+
+function saveSalary(id){
+ const staff=data.staff.find(x=>x.id===id); if(!staff)return;
+ const amount=Number($('salary-'+id).value);
+ if(!Number.isFinite(amount)||amount<0){alert('সঠিক বেতনের পরিমাণ লিখুন।');return}
+ staff.salary=amount;save();renderPayroll();alert(staff.name+'-এর মাসিক বেতন সেভ হয়েছে।');
+}
+function renderPayroll(){
+ const month=$('payrollMonth')?.value||monthOf(today());
+ const active=(data.staff||[]).filter(x=>x.active!==false);
+ const opts=$('advanceStaff');
+ if(opts){
+   const prev=opts.value;
+   opts.innerHTML=active.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
+   if(active.some(x=>x.id===prev))opts.value=prev;
+ }
+ const rows=active.map(st=>{
+   const advances=(data.advances||[]).filter(a=>a.staffId===st.id&&monthOf(a.date)===month);
+   const total=advances.reduce((n,a)=>n+(Number(a.amount)||0),0);
+   const salary=Number(st.salary)||0;
+   return {st,total,salary,remaining:Math.max(0,salary-total),over:Math.max(0,total-salary)};
+ });
+ const host=$('payrollSummary');
+ if(host)host.innerHTML=`<table><thead><tr><th>কর্মী</th><th>নির্ধারিত বেতন</th><th>এই মাসের অগ্রিম</th><th>বাকি বেতন</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc(r.st.name)}</b></td><td>${money(r.salary)}</td><td style="color:#b45309">${money(r.total)}</td><td><b style="color:#16734f">${money(r.remaining)}</b>${r.over?`<small style="display:block;color:#b91c1c">বেতন ছাড়িয়েছে ${money(r.over)}</small>`:''}</td></tr>`).join('')}</tbody></table><p class="hint" style="margin-top:8px">হিসাব: বাকি বেতন = নির্ধারিত মাসিক বেতন − ওই মাসের মোট অগ্রিম। অগ্রিম বেতন ছাড়ালে অতিরিক্ত অংশ আলাদা দেখানো হবে।</p>`;
+ const hist=$('advanceHistory');
+ const items=(data.advances||[]).filter(a=>monthOf(a.date)===month).sort((a,b)=>b.date.localeCompare(a.date));
+ if(hist)hist.innerHTML=`<h3 style="margin:0 0 8px">এই মাসের অগ্রিমের তালিকা</h3>${items.length?`<div class="tablewrap"><table><thead><tr><th>তারিখ</th><th>কর্মী</th><th>টাকা</th><th>নোট</th><th>অ্যাকশন</th></tr></thead><tbody>${items.map(a=>{const st=data.staff.find(x=>x.id===a.staffId);return `<tr><td>${esc(a.date)}</td><td>${esc(st?.name||'সাবেক কর্মী')}</td><td>${money(a.amount)}</td><td>${esc(a.note||'—')}</td><td><button class="danger" onclick="deleteAdvance('${a.id}')">মুছুন</button></td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">এই মাসে কোনো অগ্রিম এন্ট্রি নেই।</div>'}`;
+}
+function deleteAdvance(id){
+ if(!confirm('এই অগ্রিম এন্ট্রি মুছে দেবেন?'))return;
+ data.advances=data.advances.filter(x=>x.id!==id);save();renderPayroll();
+}
+
+function toggleStaff(id){
+ const s=data.staff.find(x=>x.id===id); if(!s)return;
+ const action=s.active===false?'আবার সক্রিয়':'নিষ্ক্রিয়';
+ if(!confirm(`${s.name} — ${action} করবেন? পুরোনো সার্ভিস হিসাব অক্ষত থাকবে।`))return;
+ s.active=s.active===false; save(); render();
+}
+
+$('payrollMonth').value=monthOf(today());
+$('advanceDate').value=today();
+$('payrollMonth').onchange=renderPayroll;
+$('addAdvance').onclick=()=>{
+ const staffId=$('advanceStaff').value;
+ const date=$('advanceDate').value||today();
+ const amount=Number($('advanceAmount').value);
+ const note=$('advanceNote').value.trim();
+ if(!staffId){alert('আগে কর্মী যোগ করুন।');return}
+ if(!Number.isFinite(amount)||amount<=0){alert('অগ্রিমের সঠিক টাকা লিখুন।');return}
+ data.advances.push({id:'advance-'+Date.now(),staffId,date,amount,note});
+ save();$('advanceAmount').value='';$('advanceNote').value='';renderPayroll();
+ alert('অগ্রিম সেভ হয়েছে। নির্বাচিত মাসের বাকি বেতন আপডেট হয়েছে।');
+};
+
+$('staffForm').onsubmit=e=>{
+ e.preventDefault();
+ const name=$('staffName').value.trim();
+ if(!name)return;
+ if(data.staff.some(s=>s.name.toLowerCase()===name.toLowerCase())){alert('এই নামে কর্মী আগে থেকেই আছে।');return}
+ data.staff.push({id:'staff-'+Date.now(),name,role:$('staffRole').value,phone:$('staffPhone').value.trim(),salary:Number($('staffSalary').value)||0,active:true});
+ save();$('staffForm').reset();render();
+ alert('নতুন কর্মী যোগ হয়েছে।');
+};
+
+setDefaults();renderAccessControls();render();renderDashboardGates();
+
+// Dhaka prayer times: fetched daily (Asia/Dhaka), Hanafi Asr setting
+(async function loadDhakaPrayerTimes(){
+ const dateEl=document.getElementById('prayerDate'), timesEl=document.getElementById('prayerTimes'), nextEl=document.getElementById('prayerNext');
+ if(!timesEl)return;
+ const labels=[['ফজর','Fajr'],['যোহর','Dhuhr'],['আসর','Asr'],['মাগরিব','Maghrib'],['এশা','Isha']];
+ try{
+  const r=await fetch('https://api.aladhan.com/v1/timingsByCity?city=Dhaka&country=Bangladesh&method=1&school=1');
+  if(!r.ok)throw new Error('Prayer API unavailable');
+  const j=await r.json(), t=j.data.timings, d=j.data.date;
+  const clean=v=>String(v).split(' ')[0];
+  const toAmPm=v=>{const [hh,mm]=clean(v).split(':').map(Number);const suffix=hh>=12?'PM':'AM';const h=hh%12||12;return `${h}:${String(mm).padStart(2,'0')} ${suffix}`;};
+  timesEl.innerHTML=labels.map(([bn,en])=>`<div><b>${bn}</b><strong>${toAmPm(t[en])}</strong></div>`).join('');
+  dateEl.textContent=d.readable||'আজ';
+  const now=new Date(), current=now.getHours()*60+now.getMinutes();
+  const upcoming=labels.map(([bn,en])=>({name:bn,mins:(()=>{const [h,m]=clean(t[en]).split(':').map(Number);return h*60+m})(),time:toAmPm(t[en])})).find(x=>x.mins>current);
+  nextEl.textContent=upcoming?`পরবর্তী ওয়াক্ত: ${upcoming.name} — ${upcoming.time}`:'আজকের পাঁচ ওয়াক্তের সময়সূচী';
+ }catch(e){
+  dateEl.textContent='ঢাকা';
+  nextEl.textContent='সময়সূচী দেখতে ইন্টারনেট সংযোগ চালু রাখুন।';
+ }
+})();
+</script>
+<script>
+(()=>{
+ const btn=document.getElementById('cloudSync'), status=document.getElementById('cloudStatus');
+ if(!btn)return;
+ const msg=t=>status.textContent=t;
+ const uid=()=>crypto.randomUUID();
+ const merge=(arr, rows, mapper)=>{for(const r of rows){const v=mapper(r),i=arr.findIndex(x=>x.cloud_id===r.id||x.id===r.legacy_id);if(i>=0)arr[i]={...arr[i],...v};else arr.push(v)}};
+ const syncTable=async(table, local, toCloud, fromCloud)=>{
+   const c=window.bmSupabaseClient, ctx=window.bmCloudContext;
+   const payload=local.map(x=>{if(!x.cloud_id)x.cloud_id=uid();return toCloud(x,ctx)}).filter(Boolean);
+   if(payload.length){const {error}=await c.from(table).upsert(payload,{onConflict:'id'});if(error)throw new Error(table+' আপলোড: '+error.message)}
+   const {data,error}=await c.from(table).select('*').order(table==='jobs'?'work_date':table==='purchases'?'purchase_date':'expense_date',{ascending:false}).limit(2000);
+   if(error)throw new Error(table+' ডাউনলোড: '+error.message);
+   merge(local,data||[],fromCloud);
+ };
+ btn.addEventListener('click',async()=>{
+  const c=window.bmSupabaseClient,ctx=window.bmCloudContext;
+  if(!c||!ctx){msg('আগে Supabase-এ লগইন করুন।');return}
+  if(!confirm('এই ডিভাইসের সার্ভিস, পার্টস কেনা ও খরচের হিসাব অনলাইনে পাঠিয়ে ক্লাউডের হিসাবও এই ডিভাইসে আনবেন? কোনো রেকর্ড মুছে ফেলা হবে না।'))return;
+  btn.disabled=true;msg('Sync হচ্ছে… অনুগ্রহ করে অ্যাপ বন্ধ করবেন না।');
+  try{
+   const p=ctx.profile;
+   const staffIdFor=name=>p.role==='employee'?p.staff_id:(data.staff.find(s=>String(s.name||'').trim()===String(name||'').trim())?.cloud_staff_id||null);
+   await syncTable('jobs',data.jobs,(x)=>({id:x.cloud_id||uid(),org_id:p.org_id,branch_id:p.role==='employee'?p.branch_id:(x.cloud_branch_id||p.branch_id),staff_id:staffIdFor(x.staff),created_by:ctx.userId,legacy_id:String(x.id),work_date:x.date,customer_name:x.customer||'',customer_phone:x.phone||'',device_model:x.model||'',work_description:x.work||'',staff_name_snapshot:x.staff||'',amount:Number(x.amount)||0,part_cost:Number(x.partCost)||0,status:x.status||''}),r=>({id:r.legacy_id||r.id,cloud_id:r.id,date:r.work_date,customer:r.customer_name,phone:r.customer_phone,model:r.device_model,work:r.work_description,staff:r.staff_name_snapshot,amount:Number(r.amount),partCost:Number(r.part_cost),status:r.status}));
+   await syncTable('purchases',data.purchases,x=>({id:x.cloud_id||uid(),org_id:p.org_id,branch_id:p.role==='employee'?p.branch_id:(x.cloud_branch_id||p.branch_id),staff_id:staffIdFor(x.staff),created_by:ctx.userId,legacy_id:String(x.id),purchase_date:x.date,item_name:x.item||'',supplier_name:x.party||'',supplier_phone:x.partyPhone||'',quantity:Number(x.qty)||0,unit_price:Number(x.price)||0,total:Number(x.total)||0,note:x.note||''}),r=>({id:r.legacy_id||r.id,cloud_id:r.id,date:r.purchase_date,item:r.item_name,party:r.supplier_name,partyPhone:r.supplier_phone,qty:Number(r.quantity),price:Number(r.unit_price),total:Number(r.total),note:r.note}));
+   await syncTable('expenses',data.expenses,x=>({id:x.cloud_id||uid(),org_id:p.org_id,branch_id:p.role==='employee'?p.branch_id:(x.cloud_branch_id||p.branch_id),staff_id:staffIdFor(x.staff),created_by:ctx.userId,legacy_id:String(x.id),expense_date:x.date,expense_type:x.type||'',amount:Number(x.amount)||0,note:x.note||''}),r=>({id:r.legacy_id||r.id,cloud_id:r.id,date:r.expense_date,type:r.expense_type,amount:Number(r.amount),note:r.note}));
+   // Store cloud IDs locally so future edits update the same cloud rows.
+   localStorage.setItem('bmfixer_v1',JSON.stringify(data));
+   if(typeof render==='function')render();
+   msg('Sync সম্পন্ন। সার্ভিস, পার্টস কেনা ও খরচের তথ্য আপলোড/ডাউনলোড হয়েছে। মোট স্থানীয় রেকর্ড: '+(data.jobs.length+data.purchases.length+data.expenses.length)+' টি।');
+  }catch(e){msg('Sync সম্পন্ন হয়নি: '+e.message+'। আপনার স্থানীয় হিসাব নিরাপদ আছে।')}
+  finally{btn.disabled=false}
+ });
+})();
+</script>
+</body></html>
